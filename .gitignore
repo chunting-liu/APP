@@ -1,0 +1,10 @@
+# Ignore LaTeX paper file
+paper.tex
+
+# LaTeX temporary files
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.bbl
+*.blg

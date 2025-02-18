@@ -276,8 +276,8 @@ class APPModel:
                                     for i in range(self.I) for t in range(self.T))
                                     for s in range(self.S)]),
                 'expected_emissions': np.mean([sum(sum(E[s,i,t]
-                                          for i in range(self.I) for t in range(self.T))
-                                          for s in range(self.S)]),
+                                    for i in range(self.I) for t in range(self.T))
+                                    for s in range(self.S)])
                 'emission_variance': np.var([sum(sum(E[s,i,t]
                                         for i in range(self.I) for t in range(self.T))
                                         for s in range(self.S)])
