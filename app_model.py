@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Dict, List, Tuple
 import matplotlib.pyplot as plt
-import APPModel as appmodel
+from emission_functions import EmissionFunctions
 
 class APPModel:
     def __init__(self):
@@ -136,9 +136,59 @@ class APPModel:
                         )
         
         elif emission_type == 'quadratic':
-            # Use piecewise linear approximation for quadratic function
-            self._add_piecewise_approximation(model, Q, E, 
-                lambda x, i: self.alpha_quad[i] * x + self.beta_quad[i] * x**2)
+            for s in range(self.S):
+                for i in range(self.I):
+                    for t in range(self.T):
+                        Q_max = self.cap[i,t]
+                        slopes, intercepts = EmissionFunctions.get_piecewise_parameters(
+                            EmissionFunctions.quadratic, Q_max, self.K,
+                            self.alpha_quad[i], self.beta_quad[i]
+                        )
+                        
+                        # Add piecewise linear constraints
+                        for k in range(self.K):
+                            model.addConstr(
+                                E[s,i,t] >= slopes[k] * Q[s,i,t] + intercepts[k]
+                            )
+        
+        elif emission_type == 'exponential':
+            for s in range(self.S):
+                for i in range(self.I):
+                    for t in range(self.T):
+                        Q_max = self.cap[i,t]
+                        slopes, intercepts = EmissionFunctions.get_piecewise_parameters(
+                            EmissionFunctions.exponential, Q_max, self.K,
+                            self.alpha_exp[i], self.beta_exp[i]
+                        )
+                        
+                        # Add piecewise linear constraints
+                        for k in range(self.K):
+                            model.addConstr(
+                                E[s,i,t] >= slopes[k] * Q[s,i,t] + intercepts[k]
+                            )
+        
+        elif emission_type == 'logarithmic':
+            for s in range(self.S):
+                for i in range(self.I):
+                    for t in range(self.T):
+                        Q_max = self.cap[i,t]
+                        slopes, intercepts = EmissionFunctions.get_piecewise_parameters(
+                            EmissionFunctions.logarithmic, Q_max, self.K,
+                            self.alpha_log[i], self.beta_log[i]
+                        )
+                        
+                        # Add piecewise linear constraints
+                        for k in range(self.K):
+                            model.addConstr(
+                                E[s,i,t] >= slopes[k] * Q[s,i,t] + intercepts[k]
+                            )
+        
+        # Add total emission constraint for each period
+        for s in range(self.S):
+            for t in range(self.T):
+                model.addConstr(
+                    gp.quicksum(E[s,i,t] for i in range(self.I)) <= self.max_c
+                )
     
     def _add_basic_constraints(self, model, Q, I, B, DQ_plus, DQ_minus):
         """Add basic operational constraints"""
@@ -173,19 +223,67 @@ class APPModel:
                         DQ_plus[s,i,t] - DQ_minus[s,i,t]
                     )
 
-def main():
-    # Create model instance
-    app = APPModel()
-    
-    # Build and solve model with linear emissions
-    model = app.build_model(emission_type='linear')
-    model.optimize()
-    
-    # Print results
-    if model.status == GRB.OPTIMAL:
-        print(f"Optimal objective value: {model.objVal:.2f}")
-    else:
-        print("Model could not be solved to optimality")
+    def solve(self, emission_type='linear', production_levels=None):
+        """Solve the APP model with specified emission function and production levels"""
+        model = self.build_model(emission_type)
+        model.optimize()
+        
+        if model.status == GRB.OPTIMAL:
+            # Extract solution
+            Q = np.zeros((self.S, self.I, self.T))
+            E = np.zeros((self.S, self.I, self.T))
+            I = np.zeros((self.S, self.I, self.T))
+            B = np.zeros((self.S, self.I, self.T))
+            
+            for s in range(self.S):
+                for i in range(self.I):
+                    for t in range(self.T):
+                        Q[s,i,t] = model.getVarByName(f'Q[{s},{i},{t}]').x
+                        E[s,i,t] = model.getVarByName(f'E[{s},{i},{t}]').x
+                        I[s,i,t] = model.getVarByName(f'I[{s},{i},{t}]').x
+                        B[s,i,t] = model.getVarByName(f'B[{s},{i},{t}]').x
+            
+            # Calculate costs
+            production_cost = sum(self.p_s[s] * sum(self.c_p[i] * Q[s,i,t]
+                                for i in range(self.I) for t in range(self.T))
+                                for s in range(self.S))
+            
+            emission_cost = sum(self.p_s[s] * sum(self.c_c * E[s,i,t]
+                              for i in range(self.I) for t in range(self.T))
+                              for s in range(self.S))
+            
+            total_cost = model.objVal
+            
+            # Calculate service level
+            service_level = 1 - np.mean(B / self.demand)
+            
+            # Calculate average inventory
+            avg_inventory = np.mean(I)
+            
+            return {
+                'production_plan': Q,
+                'emissions': E,
+                'costs': {
+                    'total': total_cost,
+                    'production': production_cost,
+                    'emission': emission_cost
+                },
+                'service_level': service_level,
+                'avg_inventory': avg_inventory,
+                'total_emissions': np.sum(E),
+                'expected_cost': total_cost,
+                'cost_variance': np.var([sum(sum(self.c_p[i] * Q[s,i,t] + self.c_c * E[s,i,t]
+                                    for i in range(self.I) for t in range(self.T))
+                                    for s in range(self.S)]),
+                'expected_emissions': np.mean([sum(sum(E[s,i,t]
+                                          for i in range(self.I) for t in range(self.T))
+                                          for s in range(self.S)]),
+                'emission_variance': np.var([sum(sum(E[s,i,t]
+                                        for i in range(self.I) for t in range(self.T))
+                                        for s in range(self.S)])
+            }
+        else:
+            raise Exception("Model could not be solved to optimality")
 
 if __name__ == "__main__":
     main()

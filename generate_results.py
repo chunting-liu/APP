@@ -129,20 +129,67 @@ class ExperimentRunner:
         plt.close()
 
     def _run_model_with_emission_function(self, func_type):
-        # Implementation of model running with different emission functions
-        pass
+        """Run model with different emission functions and return metrics"""
+        from app_model import APPModel
+        model = APPModel()
+        results = model.solve(emission_type=func_type.lower())
+        
+        # Get memory usage
+        import psutil
+        process = psutil.Process()
+        memory = process.memory_info().rss / 1024 / 1024  # Convert to MB
+        
+        return results['total_emissions'], memory, results['costs']['total']
 
     def _run_model_with_cost(self, func_type, cost):
-        # Implementation of model running with different costs
-        pass
+        """Run model with specific emission cost"""
+        from app_model import APPModel
+        model = APPModel(emission_cost=cost)
+        results = model.solve(emission_type=func_type.lower())
+        return np.sum(results['production_plan'])
+
+    def _get_base_production(self, func_type):
+        """Get base production without emission costs"""
+        from app_model import APPModel
+        model = APPModel(emission_cost=0)
+        results = model.solve(emission_type=func_type.lower())
+        return np.sum(results['production_plan'])
 
     def _calculate_steel_metrics(self, func_type):
-        # Implementation of steel industry metrics calculation
-        pass
+        """Calculate steel industry specific metrics"""
+        from app_model import APPModel
+        model = APPModel()
+        results = model.solve(emission_type=func_type.lower())
+        
+        # Calculate metrics
+        energy_efficiency = results['costs']['total'] / np.sum(results['production_plan'])
+        carbon_intensity = results['total_emissions'] / np.sum(results['production_plan'])
+        production_cost = results['costs']['production']
+        capacity_utilization = np.mean(results['production_plan']) / 250  # 250 is max capacity
+        
+        return [energy_efficiency, carbon_intensity, production_cost, capacity_utilization]
 
     def _run_performance_test(self, num_products, time_periods):
-        # Implementation of performance testing
-        pass
+        """Run performance test with different problem sizes"""
+        from app_model import APPModel
+        import time
+        import psutil
+        
+        start_time = time.time()
+        model = APPModel()
+        model.I = num_products
+        model.T = time_periods
+        model._generate_parameters()
+        
+        results = model.solve()
+        runtime = time.time() - start_time
+        
+        process = psutil.Process()
+        memory = process.memory_info().rss / 1024 / 1024  # Convert to MB
+        
+        gap = 0 if results['costs']['total'] > 0 else float('inf')
+        
+        return runtime, memory, gap
 
 def main():
     runner = ExperimentRunner()
