@@ -46,7 +46,7 @@ class Visualizer:
         """
         try:
             plt.figure(figsize=(12, 6))
-            ax = sns.barplot(data=results_df, x='function_type', y='total_emissions', palette=self.colors)
+            ax = sns.barplot(data=results_df, x='function_type', y='total_emissions', hue='function_type', palette=self.colors[:4], legend=False)
             plt.title('Emission Comparison Across Different Functions', pad=20)
             plt.xlabel('Emission Function Type')
             plt.ylabel('Total Emissions (tons)')

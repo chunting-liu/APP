@@ -39,7 +39,6 @@ class ExperimentRunner:
         """Run case studies for steel and semiconductor industries"""
         # Steel industry parameters
         steel_params = {
-            'emission_type': 'quadratic',  # Higher emissions at high production
             'alpha': 0.15,  # Base emission factor
             'beta': 0.003,  # Quadratic term for increasing emissions
             'capacity': 200,  # Units per period
@@ -49,7 +48,6 @@ class ExperimentRunner:
         
         # Semiconductor industry parameters
         semi_params = {
-            'emission_type': 'logarithmic',  # Efficiency gains at scale
             'alpha': 2.0,  # Scaling factor
             'beta': 0.2,   # Rate parameter
             'capacity': 300,
@@ -58,8 +56,8 @@ class ExperimentRunner:
         }
         
         results = {
-            'steel': self.run_industry_scenario('steel', steel_params),
-            'semi': self.run_industry_scenario('semiconductor', semi_params)
+            'steel': self.run_industry_scenario('steel', steel_params, 'quadratic'),  # Higher emissions at high production
+            'semi': self.run_industry_scenario('semiconductor', semi_params, 'logarithmic')  # Efficiency gains at scale
         }
         
         self.visualizer.plot_industry_comparison(results)
@@ -90,10 +88,10 @@ class ExperimentRunner:
         self.visualizer.plot_sustainability_tradeoffs(pd.DataFrame(results))
         return pd.DataFrame(results)
 
-    def run_industry_scenario(self, industry_type, params):
+    def run_industry_scenario(self, industry_type, params, emission_type):
         """Run specific industry scenario"""
         model = APPModel(**params)
-        return model.solve(emission_type=params['emission_type'])
+        return model.solve(emission_type=emission_type)
 
     def analyze_demand_uncertainty(self):
         """Analyze impact of demand uncertainty on emission patterns"""
