@@ -21,10 +21,13 @@ class ExperimentRunner:
                 emission_type=func_type,
                 production_levels=production_levels
             )
+            # Calculate total emissions across all scenarios and periods
+            total_emissions = np.sum(emissions)
             results.append({
                 'function_type': func_type,
                 'production_plan': production_plan,
                 'emissions': emissions,
+                'total_emissions': total_emissions,
                 'total_cost': costs['total'],
                 'emission_cost': costs['emission'],
                 'production_cost': costs['production']

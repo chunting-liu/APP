@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from emission_functions import EmissionFunctions
 
 class APPModel:
-    def __init__(self):
+    def __init__(self, emission_cost=None, emission_cap=None, demand_uncertainty=None):
         # Model parameters
         self.T = 12  # Number of time periods
         self.I = 5   # Number of products
@@ -16,6 +16,11 @@ class APPModel:
         
         # Initialize random seed for reproducibility
         np.random.seed(42)
+        
+        # Set optional parameters
+        self.emission_cost = emission_cost if emission_cost is not None else 50
+        self.emission_cap = emission_cap if emission_cap is not None else 2500
+        self.demand_uncertainty = demand_uncertainty
         
         # Generate parameters
         self._generate_parameters()
