@@ -140,3 +140,45 @@ class Visualizer:
             plt.close()
         except Exception as e:
             print(f"Error in plot_inventory_levels: {str(e)}")
+    
+    def plot_industry_comparison(self, results: Dict[str, dict]) -> None:
+        """Plot comparison of different industry scenarios.
+        
+        Args:
+            results: Dictionary containing results for different industries
+                    with metrics like emissions, costs, and production levels
+        """
+        try:
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+            
+            # Plot emissions comparison
+            emissions = [data['total_emissions'] for data in results.values()]
+            industries = list(results.keys())
+            ax1.bar(industries, emissions, color=self.colors[:len(industries)])
+            ax1.set_title('Total Emissions by Industry')
+            ax1.set_ylabel('Total Emissions (tons)')
+            ax1.grid(True, alpha=0.3)
+            
+            # Plot cost breakdown
+            costs = np.array([
+                [data['emission_cost'], data['production_cost']]
+                for data in results.values()
+            ])
+            bottom = np.zeros(len(industries))
+            
+            for i, cost_type in enumerate(['Emission Cost', 'Production Cost']):
+                ax2.bar(industries, costs[:, i], bottom=bottom,
+                        label=cost_type, color=self.colors[i+2])
+                bottom += costs[:, i]
+            
+            ax2.set_title('Cost Breakdown by Industry')
+            ax2.set_ylabel('Cost ($)')
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+            
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'industry_comparison.pdf'),
+                        dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_industry_comparison: {str(e)}")
