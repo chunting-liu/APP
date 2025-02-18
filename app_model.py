@@ -260,27 +260,10 @@ class APPModel:
             # Calculate average inventory
             avg_inventory = np.mean(I)
             
-            return {
-                'production_plan': Q,
-                'emissions': E,
-                'costs': {
-                    'total': total_cost,
-                    'production': production_cost,
-                    'emission': emission_cost
-                },
-                'service_level': service_level,
-                'avg_inventory': avg_inventory,
-                'total_emissions': np.sum(E),
-                'expected_cost': total_cost,
-                'cost_variance': np.var([sum(sum(self.c_p[i] * Q[s,i,t] + self.c_c * E[s,i,t]
-                                    for i in range(self.I)) for t in range(self.T))
-                                    for s in range(self.S)]),
-                'expected_emissions': np.mean([sum(sum(E[s,i,t]
-                                    for i in range(self.I)) for t in range(self.T))
-                                    for s in range(self.S)]),
-                'emission_variance': np.var([sum(sum(E[s,i,t]
-                                        for i in range(self.I)) for t in range(self.T))
-                                        for s in range(self.S)])
+            return Q, E, {
+                'total': total_cost,
+                'production': production_cost,
+                'emission': emission_cost
             }
         else:
             raise Exception("Model could not be solved to optimality")
