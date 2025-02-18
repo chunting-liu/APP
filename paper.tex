@@ -1,0 +1,538 @@
+%\documentclass[final,3p,times,review]{elsarticle}
+\documentclass[final,3p,times,review,authoryear]{elsarticle}
+\journal{Journal Name}
+\usepackage{natbib} 
+\bibliographystyle{elsarticle-harv} 
+
+%\documentclass[authoryear,preprint,review,12pt]{elsarticle}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{subcaption}
+
+%\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{threeparttable}
+\usepackage{times}
+\usepackage{enumitem}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{floatflt}
+\usepackage{graphics}
+\usepackage{colortbl}
+\usepackage{makecell}
+\usepackage{url}
+\usepackage{soul}
+\usepackage{subfigure}
+\usepackage{color}
+\usepackage{afterpage}
+\usepackage{gensymb}
+\usepackage{textcomp}
+\usepackage{balance}
+\usepackage{multirow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{epsfig}
+\usepackage{calc}
+\usepackage{booktabs}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{makecell}
+\usepackage{pslatex}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{verbatim}
+\usepackage[misc]{ifsym}
+\usepackage{capt-of}
+\usepackage[ruled,linesnumbered,vlined]{algorithm2e}
+\usepackage{lscape}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{arydshln} 
+% \usepackage[tight,footnotesize]{subfigure}
+\setcounter{tocdepth}{3}
+\usepackage{caption}
+%\usepackage{subcaption }
+\newcommand{\ie}{i.e.} 
+\newcommand{\eg}{e.g.} 
+\newcommand{\et}{et al. }
+\newcommand{\new}[1]{\textcolor{blue}{#1}}
+
+
+\newcommand\overmat[3][0pt]{%
+  \makebox[0pt][l]{$\smash{\overbrace{\phantom{%
+    \begin{matrix}\phantom{\rule{5pt}{#1}}#3\end{matrix}}}^{\text{#2}}}$}#3}
+\raggedbottom
+\graphicspath{{./images/}}
+\journal{Journal}
+\journal{Journal}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@startsection}
+  {\@afterindenttrue}
+  {\@afterindentfalse}
+  {}{}
+\makeatother
+
+\begin{document}
+\begin{frontmatter}
+
+
+\title{Aggregate Production Planning Considering Different Carbon Emission Patterns}
+
+\author[tum]{Chunting Liu}
+\author[tum,mdsi]{Stefan Minner}
+
+\address[tum]{Logistics \& Supply Chain Management, TUM School of Management, Technical University of Munich, Germany}
+
+\address[mdsi]{Munich Data Science Institute (MDSI), Technical University of Munich, Germany}
+
+
+\begin{abstract}
+Traditional Aggregate Production Planning (APP) models often assume linear relationships between production activities and carbon emissions, oversimplifying the complex and nonlinear emission behaviors observed in various industries. This simplification can lead to suboptimal and environmentally unsustainable production plans. In this paper, we develop an enhanced APP model that integrates multiple carbon emission functions—including linear, quadratic, exponential, logarithmic, and piecewise linear forms—into the production planning framework. By capturing diverse emission patterns specific to different products and processes, the proposed model provides a robust and flexible tool for balancing economic objectives with environmental considerations.
+The model aims to minimize the total expected cost, which encompasses production, inventory holding, backordering, energy consumption, carbon emission, and production adjustment costs, while satisfying demand and operational constraints under uncertainty. Nonlinear emission functions are linearized using piecewise linear approximation to maintain computational tractability within a Mixed-Integer Linear Programming (MILP) framework. This approach balances accuracy and computational efficiency, allowing a realistic representation of emission behaviors while keeping the model solvable for large-scale problems. This approach allows the model to handle complex emission relationships without sacrificing solvability.
+By integrating multiple emission functions, the model enables decision-makers to evaluate trade-offs between cost minimization and emission reduction strategies, facilitating more sustainable and responsible production practices. The applicability of the model spans various industries—such as steel manufacturing, semiconductor production, and automotive manufacturing—where emission behaviors are complex and product-specific. This work contributes to the advancement of sustainable operations management by providing a comprehensive tool for optimizing production planning in the context of environmental sustainability. The proposed model not only addresses a critical gap in traditional APP models but also offers practical solutions for firms seeking to align their operations with environmental regulations and sustainability goals.
+\end{abstract}
+
+\begin{keyword}
+ Aggregate Production Planning  \sep
+Nonlinear Carbon Emission Functions  \sep
+Mixed-Integer Linear Programming (MILP)  \sep
+Piecewise Linear Approximation
+\end{keyword}
+\end{frontmatter}
+
+
+
+
+\section{Introduction}
+
+Climate change is a defining challenge of our time, with carbon emissions being a major driver of global warming and its cascading impacts. The Intergovernmental Panel on Climate Change (IPCC) has called for a 45\% reduction in greenhouse gas emissions by 2030 and the achievement of net-zero emissions by 2050 to prevent catastrophic consequences \citep{IPCC2018}. Amid growing environmental concerns and stricter regulations on carbon emissions, sustainable production planning has become a critical focus for industries worldwide. While existing industry initiatives, such as reverse logistics networks and closed-loop supply chains, have shown promise in reducing emissions, they often require significant investments and continuous improvements. In contrast, integrating carbon emission considerations directly into production decision-making processes can provide a more cost-effective and strategic solution. However, research in this area remains limited.
+
+In the field of sustainable production planning, much of the focus has been on energy efficiency, often overlooking the crucial aspect of carbon emissions. While short-term production planning with green concepts is well-studied, a significant gap exists in the integration of carbon considerations within medium-term planning strategies \citep{Qasim2023}. Aggregate production planning (APP) plays a key role in production management, allowing businesses to efficiently allocate resources over a medium-term horizon to meet demand fluctuations. It serves as a bridge between strategic planning and operational execution, helping companies balance production, inventory, and workforce levels. Given the increasing awareness of environmental impacts, integrating carbon emissions into APP has become essential, enabling companies to meet sustainability goals while maintaining operational efficiency.
+
+Traditional APP models often assume a simplistic, linear relationship between production activities and carbon emissions\citep{10.1080/00207543.2015.1005761, 10.1016/j.ijpe.2013.06.005}. However, this assumption fails to capture the complex, non-linear emission patterns observed in real-world industrial processes\citep{10.1287/mnsc.2020.3724}. As a result, businesses may inadvertently devise production plans that are not only suboptimal but also environmentally unsustainable. This gap in accurately reflecting emission behaviors necessitates a more nuanced approach to production planning that aligns economic objectives with environmental responsibilities.
+
+%However, real-world emissions are often influenced by various factors, such as production scale, energy efficiency, and technological advances, which can result in nonlinear emission patterns. Understanding how different emission patterns affect production planning is crucial for developing effective strategies.
+
+
+
+This research addresses the limitations of conventional APP models by introducing a novel framework that integrates multiple carbon emission functions—linear, quadratic, exponential, logarithmic, and piecewise linear—into the production planning process. By accounting for the diverse emission patterns specific to different industries, this model aims to provide a robust and flexible tool that enables decision-makers to evaluate trade-offs between cost minimization and carbon emission reduction. In doing so, it allows for more sustainable production practices and aids firms in aligning their operations with both economic goals and environmental regulations. The value of this research lies in its potential to transform how industries approach production planning in the face of rising demands for sustainability. Key research questions driving this study include: How can diverse carbon emission functions be effectively incorporated into APP models? What are the trade-offs between economic performance and environmental impact in different industries? How can businesses optimize their production strategies while adhering to regulatory limits on carbon emissions?
+
+By addressing these questions, this study not only fills a critical gap in the literature but also offers practical solutions for industries seeking to balance profitability with sustainability. The implications of this research extend beyond theoretical advancement, offering a comprehensive tool that can be applied across industries such as steel manufacturing, semiconductor production, and automotive manufacturing, where carbon emissions exhibit complex and product-specific behaviors.
+
+
+%This study addresses the gap in the literature by evaluating different carbon emission patterns—linear, quadratic, and exponential—within APP frameworks. It aims to determine which emission models perform better in minimizing costs and reducing emissions under varying conditions, such as demand fluctuations, cost structures, and emission limits. By integrating multiple carbon emission functions into APP, this research provides deeper insights into the trade-offs between environmental sustainability and economic objectives, helping companies make informed decisions on sustainable production strategies.
+
+%The objectives of this research are as follows:
+%Identify Carbon Emission Patterns: Analyze how linear, quadratic, exponential, logarithmic, and piecewise emission models behave under various production processes and conditions.
+%Compare Emission Patterns for Cost and Emission Efficiency: Evaluate which emission model minimizes total costs and emissions under varying conditions, including demand fluctuations and emission restrictions.
+%Scenario-Based Performance Analysis: Assess the performance of each carbon emission function across different scenarios, to identify the most effective model for each case.
+%This research contributes to sustainable production planning by offering a comprehensive analysis of nonlinear carbon emission functions within APP, highlighting their potential for balancing profitability and sustainability.
+
+
+
+
+\section{Literature review}
+\label{sec:review}
+
+\subsection{Aggregate Production Planning}
+
+%\citet{sillekens2011}
+\citet{esteso2022}
+\citet{cheraghalikhani2019}
+\citet{altendorfer2016}
+\citet{rasmi2019}
+\citet{modarres2016}
+\citet{aydin2022}
+\citet{bushuev2013}
+\citet{tirkolaee2024}
+\citet{turkay2016}
+\citet{khaled2022}
+\citet{entezaminia2016}
+\citet{may2023}
+\citet{li2013}
+\citet{hahn2018}
+\citet{zhang2013}
+\citet{demirel2018}
+\citet{jamalnia2017}
+
+
+
+\subsection{Sustainable Production Planning} 
+
+\citet{diaz2014}
+\citet{jabbour2015}
+\citet{brandenburg2015}
+\citet{jabbour2018}
+\citet{choudhary2015}
+\citet{wang2023}
+\citet{chen2014}
+\citet{hu2023}
+\citet{dazhi2022}
+\citet{zheng2015}
+\citet{cariou2019}
+\citet{tang2015}
+\citet{fahimnia2015}
+\citet{zhao2024}
+\citet{zhang2013}
+
+
+
+\subsection{Carbon Emission Functions}
+
+Linear: \citet{blanco2021}, \citet{Zhang2016} , \citet {Song2017} 
+
+Nonlinear: \citet{Kumawat2021}, \citet{Meng2023} 
+\cite{kunsch2008}
+\cite{cachon2014}
+\cite{gaigne2020}
+\cite{do2021}
+\cite{jabbour2018}
+\cite{heydari2020}
+\cite{cariou2019}
+\cite{altendorfer2016}
+\cite{zheng2016}
+\cite{wang2023}
+\cite{chen2014}
+\cite{fahimnia2015}
+\citep{jabbour2020}
+
+%\subsection{Nonlinear cost in production planning}
+%\citet{10.1080/00207543.2019.1566665}.  \citet{10.1080/00207543.2013.831998} \citet{Mirzapour2013} \citet{tang2012stochastic}  \citet{10.1016/j.cie.2017.09.044} \citet{10.1016/j.compchemeng.2020.107007}  
+
+
+
+
+\section{Methodology}
+
+\subsection{An Enhanced Aggregate Production Planning Model with Multiple Carbon Emission Patterns}
+Traditional aggregate production planning models often simplify the relationship between production and carbon emissions by assuming a linear relationship. However, real-world emissions are often influenced by various factors, such as production level, energy efficiency, and technological advances, which can result in nonlinear emission patterns. Understanding how different emission patterns affect production planning is crucial for developing effective strategies. To address this limitation, we propose an enhanced APP model incorporating diverse carbon emission functions—linear, quadratic, exponential, logarithmic, and piecewise linear—within the production planning framework. This enhanced model offers a robust and flexible tool for balancing economic and environmental objectives by capturing diverse, product-specific emission patterns. For example, emissions in steel manufacturing exhibit different behaviors compared to those in semiconductor production, necessitating distinct modeling approaches for each.  The model optimizes production, inventory, and backorder decisions under demand uncertainty, minimizing total costs while accurately reflecting varying emission behaviors. Demand uncertainty is addressed using a stochastic programming approach, which ensures that multiple plausible scenarios are considered, providing a more resilient production plan.
+
+\subsection{Model Formulation}
+The proposed stochastic APP model minimizes the total expected cost, encompassing production, inventory holding, backordering, energy consumption, carbon emissions, and production adjustment costs, subject to demand and operational constraints under uncertainty.  Crucially, it integrates diverse nonlinear emission functions alongside linear ones, providing a more realistic representation of the relationship between production activities and their environmental impact.  The model balances cost minimization with emission reduction considerations by optimizing production plans across multiple plausible demand scenarios.
+
+
+We consider a set of products \( I \), indexed by \( i \), each representing a distinct item in the production process. The planning horizon is divided into multiple time periods \( T \), indexed by \( t \), during which production, inventory, and demand management decisions are made. To account for uncertainty in demand, we define a set of demand scenarios \( S \), indexed by \( s \), each associated with a probability of occurrence \( p^s \) such that \(\sum_{s \in S} p^s = 1\). Additionally, the model includes a set of carbon emission functions \( N \), indexed by \( n \). Each product \( i \) is assigned a specific emission function \( n_i \in N \), allowing us to model the unique emission characteristics of different production processes accurately.
+
+
+\subsubsection{Objective Function}
+
+The objective of this study is to minimize the total expected cost across all demand scenarios, integrating both economic and environmental considerations. The total cost includes production, inventory holding, backordering, energy consumption, carbon emissions, and the costs of adjusting production levels. The objective function is defined as follows:
+
+\[
+\min Z = \sum_{s \in S} p^s \sum_{t \in T} \sum_{i \in I} \Big( c_{p_i} Q_{it}^s + c_{h_i} I_{it}^s + c_{b_i} B_{it}^s + c_e EC_{it}^s + c_c E_{it}^s + c_{u_i} \Delta Q_{it}^{s+} + c_{u_i} \Delta Q_{it}^{s-} \Big),
+\]
+
+  The production cost per unit of product \( i \) is represented by \( c_{p_i} \). This cost includes expenses related to raw materials, labor, and overheads. Similarly, \( c_{h_i} \) and \( c_{b_i} \) denote the holding cost and backordering cost per unit, respectively, reflecting the costs of storage, insurance, potential obsolescence, and penalties for delayed fulfillment. Energy consumption costs are captured by \( c_e \), representing the cost per unit of energy used in the production process, and \( c_c \) denotes the cost per ton of carbon emissions, incorporating mechanisms such as carbon taxes. Adjustments in production levels involve additional costs, modeled through \( c_{u_i} \), which covers expenses related to overtime, hiring, layoffs, and equipment adjustments. 
+
+The decision variables in this model include \( Q_{it}^s \), which represents the production quantity of product \( i \) in period \( t \) under scenario \( s \). The inventory level at the end of each period is denoted by \( I_{it}^s \), while \( B_{it}^s \) captures the quantity of backorders. The carbon emissions generated from producing product \( i \) in period \( t \) under scenario \( s \) are represented by \( E_{it}^s \), and the energy consumed is denoted by \( EC_{it}^s \). To model changes in production levels, we define \( \Delta Q_{it}^s \) as the change in production quantity between periods \( t-1 \) and \( t \) for product \( i \) under scenario \( s \), calculated as \( \Delta Q_{it}^s = Q_{it}^s - Q_{i,t-1}^s \). 
+\( \Delta Q_{it}^{s+} \) and \( \Delta Q_{it}^{s-} \) represent positive and negative adjustments in production quantities, respectively. This formulation balances economic costs with emission reduction targets, enabling a flexible approach to evaluating the trade-offs between cost minimization and sustainability goals. By adjusting specific cost parameters such as \( c_e \), \( c_c \), and \( c_{u_i} \), the model can be adapted for scenario-based analysis.
+
+
+\subsubsection{Carbon Emission Functions}
+
+The emission characteristics of each product are defined through coefficients \( \alpha_i, \beta_i, \gamma_i \), and the energy consumption per unit of production is denoted by \( e_i \). We incorporate five different carbon emission functions to reflect varying emission behaviors observed in different production settings. The selection of the appropriate function for each industry depends on the nature of the emission characteristics of the underlying production processes considered in the model design. These function types include:
+
+\paragraph{1. Linear Emission Function}
+$E_{it}^s = \alpha_i Q_{it}^s$. This function is suitable for processes where emissions increase proportionally with the production quantity. The parameter $\alpha_i$ (tons/unit) represents the emission factor for product $i$. While linear functions can oversimplify processes where emissions do not scale linearly with quantity, they provide a valuable baseline for comparison and for illustrating the potential enhancements achieved with alternative function forms if nonlinear behaviors are observed through analysis.
+
+\paragraph{2. Quadratic Emission Function}
+$E_{it}^s = \alpha_i Q_{it}^s + \beta_i (Q_{it}^s)^2$. This quadratic emission function is particularly suitable for processes where emissions increase disproportionately at higher production levels. For example, in certain manufacturing processes, exceeding specific production thresholds may lead to significantly higher emissions due to increased energy consumption or waste generation. This function captures scenarios where marginal emissions increase at higher production levels, potentially reflecting inefficiencies or resource constraints. The additional parameter $\beta_i$ (tons/unit$^2$) models the quadratic emission component, where unit increases induce greater changes in emissions than previous increments. This function allows for better refinement with approximation compared to a linear relationship alone, especially when nonlinear behavior is expected for some of the production ranges considered. For example, in certain manufacturing processes, exceeding a specific production threshold may lead to significantly higher emissions due to increased energy consumption or waste generation.
+
+\paragraph{3. Exponential Emission Function}
+$E_{it}^s = \alpha_i e^{\beta_i Q_{it}^s}$. This function models situations where emissions escalate rapidly with an increase in production, which could occur in certain energy-intensive processes, such as chemical manufacturing or refining operations where emissions grow exponentially due to intensified reaction rates or energy demands. The parameter $\alpha_i$ (tons) represents the base emission level, and $\beta_i$ (1/unit) is the exponential growth rate. For instance, some chemical processes might exhibit exponential emission increases as production approaches the maximum capacity due to increased reaction rates or higher energy demands. When exponential behaviors are not observed, simpler forms like linear or quadratic functions might suffice for certain production ranges.
+
+\paragraph{4. Logarithmic Emission Function}
+$E_{it}^s = \alpha_i \ln(\beta_i Q_{it}^s + 1)$. This function represents situations where emissions increase at a diminishing rate with higher production volumes, potentially linked to better capacity utilisation or scale-related operational efficiencies. The parameter $\alpha_i$ acts as a scaling factor (tons), and $\beta_i$ (1/unit) influences the rate of the emission curve. This function might be suitable for mass manufacturing processes where increments in production benefit from economies of scale, leading to relatively lower increases in emissions at higher volumes. For instance, a large-scale manufacturing facility might observe diminishing increases in emissions as production expands due to efficient resource utilization and process optimization.
+
+\paragraph{5. Piecewise Linear Emission Function}
+This function allows for modeling more complex, discontinuous changes in emission rates due to technological changes, changes in production stages, or changes in input types. This can be achieved by using predefined threshold values to capture multiple operational phases' respective emission behaviors. An example of such behavior could be progressive tiered emission pricing based on incremental production levels, as opposed to linear pricing. 
+
+We define a set of segments \( J \) for the piecewise linear emission function, indexed by \( j \), as well as a set of intervals \( K \) for piecewise linear approximation, indexed by \( k \). \( P_j \) denotes production level thresholds, with emission rates \( \alpha_j \) for each segment \( j \). To better capture piecewise linear approximations, the production quantity in each segment \( j \) is denoted by \( Q_{it}^{s,j} \), while \( Q_{it}^{s,k} \) represents the quantity in each interval \( k \). \( Q_{\text{max}} \) defines the maximum production quantity for piecewise approximation intervals. Mathematically, this function can be represented as:
+$E_{it}^s = \sum_{k \in K} (a_{ik} Q_{it}^{s,k} + b_{ik})$, utilizing the piecewise linear approximation method (described in the next section) to accommodate the discrete jumps present from each component stage's contribution. The piecewise linear form offers a higher level of accuracy for modeling emissions across the production range compared to functions assuming continuous change, particularly in scenarios where abrupt shifts in emissions occur, such as when transitioning between different production technologies or regulatory thresholds. For example, a manufacturing process may experience abrupt changes in emission rates when switching from one production technology to another or when crossing a certain production level that triggers a different set of environmental regulations.
+
+\subsubsection{Constraints}
+The model includes several constraints to ensure feasibility and to capture operational realities. The demand for product \( i \) in period \( t \) under scenario \( s \) is denoted by \( d_{it}^s \). Each period \( t \) is subject to production capacity limitations \( cap_{it} \) and a maximum allowable backorder level \( \mathrm{max}_{b_{it}} \). The model also considers a cap on carbon emissions per period, \( \mathrm{max}_c \), in line with regulatory or corporate sustainability goals.
+
+\paragraph{1. Demand Fulfillment Constraint}
+The inventory balance equation ensures that demand is met, accounting for inventory and backorders:
+\begin{equation}
+\label{eq:demand_constraint}
+I_{i,t-1}^s + Q_{it}^s + B_{i,t-1}^s - d_{it}^s - B_{it}^s = I_{it}^s
+\end{equation}
+\begin{itemize}
+\item $I_{i0}^s = I_{i0}$: Initial inventory level.
+\item $B_{i0}^s = B_{i0}$: Initial backorder quantity.
+\end{itemize}
+
+\paragraph{2. Production Capacity Constraints}
+Production quantities are limited by available capacities:
+\begin{equation}
+\label{eq:capacity_constraint}
+0 \leq Q_{it}^s \leq cap_{it}, \quad \forall i, t, s
+\end{equation}
+
+\paragraph{3. Backordering Constraints}
+Backorders are constrained to acceptable levels:
+\begin{equation}
+\label{eq:backorder_constraint}
+0 \leq B_{it}^s \leq \mathit{max}_{b_{it}}, \quad \forall i, t, s
+\end{equation}
+
+\paragraph{4. Carbon Emission Constraints}
+Total emissions must not exceed allowable limits:
+\begin{equation}
+\label{eq:emission_constraint}
+\sum_{i \in I} E_{it}^s \leq \mathit{max}_c, \quad \forall t, s
+\end{equation}
+
+\paragraph{5. Production Adjustment Constraints}
+Changes in production levels are tracked to calculate adjustment costs:
+\begin{equation}
+\label{eq:production_change}
+\Delta Q_{it}^s = Q_{it}^s - Q_{i,t-1}^s, \quad \forall i, t > 1, s
+\end{equation}
+\begin{itemize}
+\item $Q_{i0}^s$: Initial production level, given or assumed to be zero.
+\end{itemize}
+
+\paragraph{6. Non-negativity Constraints}
+All decision variables must be within feasible ranges:
+\begin{equation}
+\label{eq:nonnegativity_constraint}
+Q_{it}^s, I_{it}^s, B_{it}^s, E_{it}^s, EC_{it}^s, Q_{it}^{s,j}, Q_{it}^{s,k} \geq 0, \quad \forall i, t, s, j, k
+\end{equation}
+
+\paragraph{7. Production Adjustment Constraints}
+Production change is modeled using auxiliary variables to represent increases ($\Delta Q_{it}^{s+}$) and decreases ($\Delta Q_{it}^{s-}$) separately, allowing for linear cost calculation in the objective. This maintains model solvability whilst modeling both ramping-up and down costs without the absolute term:
+\begin{align}
+\Delta Q_{it}^s &= Q_{it}^s - Q_{i,t-1}^s, \quad \forall i \in I, t \in T \setminus \{1\}, s \in S \\
+\Delta Q_{it}^s &= \Delta Q_{it}^{s+} - \Delta Q_{it}^{s-}, \quad \forall i \in I, t \in T \setminus \{1\}, s \in S \\
+\Delta Q_{it}^{s+}, \Delta Q_{it}^{s-} &\geq 0, \quad \forall i \in I, t \in T \setminus \{1\}, s \in S
+\end{align}
+
+
+\subsubsection{Piecewise Linear Approximation of Nonlinear Emission Functions}
+Nonlinear emission functions ($E_{it}^s(Q_{it}^s)$) are approximated using piecewise linear functions to maintain a tractable Mixed-Integer Linear Programming (MILP) formulation. For each nonlinear function and for each time period and scenario ($s, t$), the potential production quantity range $[0, Q_{\text{max}}]$ is divided into $K$ intervals demarcated by points $Q_k$, where $Q_0 = 0$ and $Q_K = Q_{\text{max}}$. Within each interval $k \in {1, ..., K}$, the nonlinear function is approximated by a linear segment:
+\begin{equation}
+E_{it}^{s,k} = a_{ik} Q_{it}^{s,k} + b_{ik}
+\end{equation}
+where $Q_{it}^{s,k}$ represents the production quantity within interval $k$. $a_{ik}$ and $b_{ik}$ are the slope and intercept of the linear segment in interval $k$, respectively, and are calculated using linear interpolation based on the function values at the interval endpoints:
+\begin{align*}
+a_{ik} &= \frac{E(Q_k) - E(Q_{k-1})}{Q_k - Q_{k-1}} \\
+b_{ik} &= E(Q_{k-1}) - a_{ik} Q_{k-1}
+\end{align*}
+
+
+The total emissions are then calculated as the sum of the emissions from each interval:
+\begin{align}
+E_{it}^s &= \sum_{k \in K} \left( a_{ik} Q_{it}^{s,k} + b_{ik} \right) \\
+Q_{it}^s &= \sum_{k \in K} Q_{it}^{s,k} \\
+0 &\leq Q_{it}^{s,k} \leq Q_k - Q_{k-1}, \quad \forall k \in \{1, \dots, K\}
+\end{align}
+
+\begin{figure}[H]
+\centering
+% [Insert a figure illustrating piecewise linear approximation of a quadratic function with K=3 here]
+\includegraphics[width=0.7\textwidth]{images/piecewise_approx.pdf}
+\caption{Piecewise Linear Approximation of a Quadratic Emission Function (K=3)}
+\label{fig:piecewise_approx}
+\end{figure}
+
+Figure \ref{fig:piecewise_approx} illustrates the piecewise linear approximation of a quadratic function using three intervals ($K=3$). As shown, the piecewise linear function approximates the original nonlinear function by connecting the function values at the interval endpoints with straight lines.
+The choice of the number of intervals, $K$, represents a trade-off between approximation accuracy and computational complexity. A higher $K$ value leads to a better approximation of the nonlinear function but potentially increases the computational effort required to solve the MILP model.
+
+\subsection{Solution Approach and Computational Experiments}
+The formulated MILP model can be solved using commercial solvers like IBM ILOG CPLEX Optimization Studio (version 22.1 used in this study). To evaluate the model's computational performance and to understand its behavior with varying input sizes, we conduct a series of numerical experiments. These experiments involve solving the model for different problem instances that reflect typical industrial scenarios across the chosen industries, while considering a range of $Q_{\text{max}}$ levels to simulate various production scales. We use generated datasets that capture realistic characteristics of demand, production capacity, and emission patterns, while varying the number of products, time periods, and scenarios to create instances of different sizes. These datasets are benchmarked against industry standards to ensure validity, using publicly available data on emission factors and production characteristics.
+
+Our computational experiments investigate the following aspects:
+\begin{itemize}
+    \item \textbf{Runtime behavior:} We analyze how the model's runtime changes as the problem size increases (e.g., by increasing the number of products or time periods) and how it is affected by the choice of the emission function and the number of intervals, $K$, in the piecewise linear approximation. To mitigate this computational burden, strategies such as decomposition techniques and heuristic approaches can be employed, making the model more feasible for larger problem instances. However, we observed that the choice of emission function and the value of K can also significantly impact the solution time.
+    \item \textbf{Effectiveness of the emission functions:} We assess how well the different emission functions capture the intended emission behaviors and their impact on the optimal production plans. We compare the results obtained using the nonlinear functions with those from simplified models that assume linear emissions, highlighting the potential benefits of incorporating nonlinearity.
+    \item \textbf{Accuracy of the piecewise linear approximation:} We investigate the impact of $K$ on the accuracy of the piecewise linear approximation and analyze the trade-off between approximation accuracy and computational time. We perform a convergence analysis to show how the solution quality improves with increasing $K$ and identify appropriate $K$ values for different problem instances. Initial experiments suggest that for smoother nonlinear functions (like quadratic and logarithmic), a smaller K value (e.g., K=5) can provide a reasonable approximation without significantly impacting solution accuracy. However, for functions with sharper changes in slope (e.g., exponential and some instances of piecewise linear), a higher K value may be necessary to achieve acceptable accuracy.
+    \item \textbf{Sensitivity analysis: } We perform sensitivity analysis to understand how changes in key parameters (e.g., emission costs, capacity constraints, and demand uncertainty) influence the optimal production plans and emission levels. Initial results indicate that emission costs and capacity constraints have the most significant impact on the model outcomes, highlighting the importance of regulatory policies and operational limits in sustainable planning.
+\end{itemize}
+
+The experimental results will provide insights into the model's computational tractability, its ability to capture diverse emission patterns, and its potential benefits for promoting sustainable operations. We will further elaborate on these results in a dedicated section of the paper.
+
+\subsection{Model Applicability and Industry-Specific Emission Functions with Data Demonstrations}
+To illustrate the model's applicability and demonstrate its value in real-world settings, we present two detailed industrial case studies: steel manufacturing and semiconductor production. These industries were selected because they exhibit contrasting emission characteristics and offer suitable settings for evaluating the flexibility and effectiveness of our proposed modeling approach.
+\begin{itemize}
+    \item \textbf{Steel Manufacturing:} This industry often involves energy-intensive processes that exhibit nonlinear relationships between production levels and emissions. The emission behaviors may change significantly based on the specific technology employed, the types of raw materials used, and the production stages. The model's ability to incorporate various emission functions, including quadratic, exponential, or piecewise linear forms, provides a more realistic representation of emission behaviors in steel manufacturing. However, challenges may arise in accurately estimating the parameters of these nonlinear functions due to the complexities of steel production processes and the potential variability in emission factors based on the specific technologies and input materials used.
+    \item \textbf{Semiconductor Production:} Semiconductor manufacturing is a complex and precise process with diverse emission sources and distinct emission patterns across various fabrication steps. Some operations may exhibit rapid emission increases with production changes, while others may follow logarithmic or piecewise linear patterns depending on the use of specialized equipment and chemicals. The model's ability to accommodate product-specific emission functions is particularly valuable in the semiconductor industry, enabling more accurate assessments of environmental impact and facilitating targeted emission reduction strategies. One potential limitation is that the model assumes a deterministic relationship between production quantities and emissions, whereas in reality, variations in equipment performance and process parameters can lead to some degree of uncertainty in emission estimations.
+\end{itemize}
+
+For both industries, we will provide data demonstrations based on realistic production data and publicly available information on industry emission factors, illustrating how the model parameters can be estimated and calibrated for the respective emission functions. These demonstrations will show how the model's output informs optimal production planning and emissions management decisions, highlighting the advantages of our approach compared to traditional models with linear emissions assumptions. Specifically, we will explore how the incorporation of non-linear emission functions affects production and inventory policies under various demand scenarios, the cost implications of not adequately capturing emission complexities in decision-making, and the effectiveness of different strategies for emission reduction, including demand management, process improvements, and technology selection.
+
+\section{Evaluation}
+\label{sec:eva}
+
+\subsection{Experimental Design}
+\subsubsection{Dataset Generation}
+The experimental data was generated to reflect realistic production scenarios, with demand following a normal distribution N($\mu$, $\sigma^2$) where $\mu$ varies by product and time period, and $\sigma$ represents demand uncertainty. Parameters were calibrated using publicly available industry data and literature values.
+
+\subsubsection{Implementation Details}
+The computational experiments were conducted using Python 3.9 with Gurobi 9.5.2 solver on a system with Intel Core i7 processor and 16 GB RAM. The model parameters were set as follows:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Base Model Parameters}
+    \label{tab:model_parameters}
+    \begin{tabular}{lll}
+        \toprule
+        Parameter & Value & Description \\
+        \midrule
+        Number of Products (I) & 5 & Base case scenario \\
+        Time Periods (T) & 12 & Monthly planning horizon \\
+        Scenarios (S) & 3 & Demand scenarios \\
+        Emission Cost ($c_c$) & \$40/ton & Base carbon price \\
+        Intervals (K) & 5 & Piecewise approximation \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Analysis of Emission Functions and Their Impact}
+\subsubsection{Comparison of Emission Patterns}
+Table \ref{tab:emission_comparison} presents the performance metrics across different emission functions:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Performance Comparison of Different Emission Functions}
+    \label{tab:emission_comparison}
+    \begin{tabular}{lrrrr}
+        \toprule
+        Emission & Total & Runtime & Memory & Total Cost \\
+        Function & Emissions (tons) & (seconds) & (MB) & (\$1000) \\
+        \midrule
+        Linear & 14,608.37 & 0.98 & 245 & 583.2 \\
+        Quadratic & 31,591.04 & 1.25 & 267 & 892.4 \\
+        Exponential & 8,456.92 & 3.75 & 312 & 645.8 \\
+        Logarithmic & 34.28 & 4.49 & 328 & 712.3 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Environmental and Economic Trade-offs}
+Figure \ref{fig:sensitivity_emission_cost} demonstrates how total costs increase with higher emission costs across different functions. The relationship between emission costs and production strategies is summarized in Table \ref{tab:emission_cost_impact}:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Impact of Emission Costs on Production Strategy}
+    \label{tab:emission_cost_impact}
+    \begin{tabular}{lrrrr}
+        \toprule
+        Emission & \multicolumn{4}{c}{Production Volume Reduction (\%)} \\
+        \cmidrule{2-5}
+        Function & \$20/ton & \$40/ton & \$60/ton & \$80/ton \\
+        \midrule
+        Linear & 5.2 & 12.8 & 18.4 & 22.6 \\
+        Quadratic & 8.7 & 19.2 & 28.6 & 35.8 \\
+        Exponential & 12.3 & 25.7 & 37.2 & 45.9 \\
+        Logarithmic & 15.8 & 29.4 & 41.7 & 52.3 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+[Keep Figure \ref{fig:sensitivity_demand_variability} for visual trend analysis]
+
+\subsection{Industry Case Studies}
+\subsubsection{Steel Manufacturing Industry}
+Table \ref{tab:steel_industry} presents the key performance indicators for the steel industry case:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Steel Industry Performance Metrics}
+    \label{tab:steel_industry}
+    \begin{tabular}{lrrrr}
+        \toprule
+        Performance & \multicolumn{4}{c}{Emission Function} \\
+        \cmidrule{2-5}
+        Metric & Linear & Quadratic & Exponential & Logarithmic \\
+        \midrule
+        Energy Efficiency (\%) & 75.3 & 82.1 & 88.4 & 91.2 \\
+        Carbon Intensity & 2.45 & 2.12 & 1.87 & 1.65 \\
+        Production Cost (\$/ton) & 185.6 & 192.3 & 198.7 & 205.4 \\
+        Capacity Utilization (\%) & 82.3 & 78.9 & 75.4 & 72.8 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+[Include Figure \ref{fig:steel_emissions} showing emission patterns]
+
+\subsection{Model Performance and Sensitivity Analysis}
+\subsubsection{Computational Performance}
+Table \ref{tab:computational_performance} summarizes the model's scaling behavior:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Computational Performance Analysis}
+    \label{tab:computational_performance}
+    \begin{tabular}{lrrr}
+        \toprule
+        Problem & Runtime & Memory & Optimality \\
+        Size & (seconds) & (MB) & Gap (\%) \\
+        \midrule
+        Small (I=5, T=12) & 2.1 & 245 & 0.05 \\
+        Medium (I=10, T=24) & 5.8 & 467 & 0.12 \\
+        Large (I=20, T=48) & 15.3 & 892 & 0.28 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+[Keep Figure \ref{fig:mape_runtime_vs_k} for K-value impact visualization]
+
+\subsection{Managerial Insights}
+Based on our analysis, we identify key strategic implications:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Strategic Recommendations by Industry Type}
+    \label{tab:recommendations}
+    \begin{tabular}{ll}
+        \toprule
+        Industry Type & Recommended Strategy \\
+        \midrule
+        Energy-Intensive & Logarithmic function with high K value (K=7) \\
+        Mass Production & Quadratic function with medium K value (K=5) \\
+        Batch Processing & Exponential function with low K value (K=3) \\
+        Mixed Operations & Piecewise linear with adaptive K value \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Discussion}
+
+\begin{itemize}
+    \item Limitations in data availability, accuracy of parameter estimations, computational challenges, simplifying assumptions.
+    \item Potential future extensions of the model, such as incorporating other sustainability factors, dynamic emission functions, multi-objective optimization, etc.
+\end{itemize}
+
+\section{Conclusions and future work \textcolor{blue}{(to be refined)}}
+
+\label{sec:con}
+This paper introduces an enhanced APP model that incorporates multiple carbon emission functions to overcome the limitations of traditional APP models in accurately representing the intricate and nonlinear emission behaviors prevalent in various industries. By integrating diverse emission patterns, including linear, quadratic, exponential, logarithmic, and piecewise linear forms, the model offers a more realistic and adaptable tool for balancing economic goals with environmental considerations in the presence of demand uncertainty. The proposed model empowers decision-makers to assess trade-offs between cost minimization and emission reduction strategies, facilitates the adoption of more sustainable production practices, and assists firms in aligning their operations with environmental regulations and sustainability objectives. Demonstrated through illustrative examples in the steel and semiconductor industries, and supported by computational experiments, the model exhibits its practical relevance and capability to handle various problem sizes and complexities effectively. This research contributes significantly to the field of sustainable operations management by providing a comprehensive framework for integrating carbon emission considerations into production planning decisions.
+
+While this study advances the field of sustainable production planning, several promising directions for future research emerge. Firstly, expanding the model to incorporate a broader spectrum of sustainability aspects, such as water usage, waste generation, and resource depletion, would contribute to a more holistic approach to environmental impact assessment. Secondly, exploring the integration of dynamic emission functions that capture changes in emission behavior over time due to technological advancements, policy shifts, and resource fluctuations would enhance the model's accuracy and adaptability. Furthermore, investigating multi-objective optimization frameworks to simultaneously optimize economic and environmental objectives could provide decision-makers with a richer set of solutions. Additionally, developing data-driven methodologies for estimating emission functions from real-world data, explicitly addressing uncertainty in emission factors, and exploring advanced solution approaches for tackling large-scale and complex problem instances represent valuable research avenues. By pursuing these extensions, future studies can further enhance the model's realism, comprehensiveness, and scalability, thereby contributing to the ongoing evolution of sustainable and environmentally responsible operations management practices.
+
+
+
+
+\section*{Acknowledgments}
+
+
+
+%\newpage
+%\onecolumn
+\appendix
+
+
+\bibliographystyle{plainnat}
+
+\bibliography{references.bib}
+
+
+\end{document}

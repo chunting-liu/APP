@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
+import os
+from config import IMAGES_DIR
 
 class Visualizer:
     def __init__(self):
@@ -14,7 +16,7 @@ class Visualizer:
         plt.xlabel(title)
         plt.ylabel('Runtime (seconds)')
         plt.grid(True)
-        plt.savefig(f'c:/Users/group/Downloads/images/runtime_vs_{x_var.lower()}.pdf')
+        plt.savefig(os.path.join(IMAGES_DIR, f'runtime_vs_{x_var.lower()}.pdf'))
         plt.close()
     
     def plot_emission_comparison(self, results_df):
@@ -25,7 +27,7 @@ class Visualizer:
         plt.ylabel('Total Emissions (tons)')
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig('c:/Users/group/Downloads/images/emission_comparison.pdf')
+        plt.savefig(os.path.join(IMAGES_DIR, 'emission_comparison.pdf'))
         plt.close()
     
     def plot_sensitivity_analysis(self, results_df, x_var, y_var, title):
@@ -40,5 +42,5 @@ class Visualizer:
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
-        plt.savefig(f'c:/Users/group/Downloads/images/sensitivity_{y_var.lower()}.pdf')
+        plt.savefig(os.path.join(IMAGES_DIR, f'sensitivity_{y_var.lower()}.pdf'))
         plt.close()

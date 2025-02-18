@@ -5,11 +5,12 @@ import seaborn as sns
 from gurobipy import *
 import time
 import os
+from config import RESULTS_DIR, IMAGES_DIR
 
 class ExperimentRunner:
     def __init__(self):
-        self.results_dir = "c:/Users/group/Downloads/results"
-        self.figures_dir = "c:/Users/group/Downloads/images"
+        self.results_dir = RESULTS_DIR
+        self.figures_dir = IMAGES_DIR
         os.makedirs(self.results_dir, exist_ok=True)
         os.makedirs(self.figures_dir, exist_ok=True)
         

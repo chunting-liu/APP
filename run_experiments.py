@@ -2,18 +2,19 @@ from experiments import ExperimentRunner
 import logging
 import os
 import pandas as pd
+from config import LOG_FILE, RESULTS_DIR, IMAGES_DIR
 
 def setup_logging():
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
-        filename='c:/Users/group/Downloads/experiment_results.log'
+        filename=LOG_FILE
     )
 
 def main():
     setup_logging()
-    os.makedirs('c:/Users/group/Downloads/images', exist_ok=True)
-    os.makedirs('c:/Users/group/Downloads/results', exist_ok=True)
+    os.makedirs(IMAGES_DIR, exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     
     runner = ExperimentRunner()
     results = {}
@@ -37,7 +38,7 @@ def main():
         
         # Save results
         for name, df in results.items():
-            df.to_csv(f'c:/Users/group/Downloads/results/{name}_results.csv')
+            df.to_csv(os.path.join(RESULTS_DIR, f'{name}_results.csv'))
         
         logging.info("All experiments completed successfully")
         
