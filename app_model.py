@@ -271,7 +271,7 @@ class APPModel:
                 'emission': emission_cost,
                 'production': production_cost
             }
-            return Q, E, costs
+            return total_cost, np.sum(E), service_level, avg_inventory
         else:
             raise Exception("Model could not be solved to optimality")
 
