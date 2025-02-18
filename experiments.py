@@ -30,7 +30,7 @@ class ExperimentRunner:
                 'production_cost': costs['production']
             })
         
-        self.visualizer.plot_emission_patterns(results)
+        self.visualizer.plot_emission_comparison(pd.DataFrame(results))
         return pd.DataFrame(results)
     def run_industry_case_studies(self):
         """Run case studies for steel and semiconductor industries"""
