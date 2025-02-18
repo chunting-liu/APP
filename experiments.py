@@ -100,12 +100,7 @@ class ExperimentRunner:
         # Create model with proper parameters
         model = APPModel(**model_params)
         
-        # Pass emission parameters to solve method
-        emission_params = {
-            'alpha': params.get('alpha'),
-            'beta': params.get('beta')
-        }
-        return model.solve(emission_type=emission_type, **emission_params)
+        # Solve the model with the specified emission type
         return model.solve(emission_type=emission_type)
 
     def analyze_demand_uncertainty(self):
