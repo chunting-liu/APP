@@ -90,7 +90,22 @@ class ExperimentRunner:
 
     def run_industry_scenario(self, industry_type, params, emission_type):
         """Run specific industry scenario"""
-        model = APPModel(**params)
+        # Extract model parameters
+        model_params = {
+            'emission_cost': params.get('emission_cost', 50),
+            'emission_cap': params.get('emission_cap', 2500),
+            'demand_uncertainty': params.get('demand_uncertainty', None)
+        }
+        
+        # Create model with proper parameters
+        model = APPModel(**model_params)
+        
+        # Pass emission parameters to solve method
+        emission_params = {
+            'alpha': params.get('alpha'),
+            'beta': params.get('beta')
+        }
+        return model.solve(emission_type=emission_type, **emission_params)
         return model.solve(emission_type=emission_type)
 
     def analyze_demand_uncertainty(self):
