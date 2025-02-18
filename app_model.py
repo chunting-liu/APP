@@ -265,11 +265,7 @@ class APPModel:
             # Calculate average inventory
             avg_inventory = np.mean(I)
             
-            return Q, E, {
-                'total': total_cost,
-                'production': production_cost,
-                'emission': emission_cost
-            }
+            return total_cost, np.sum(E), service_level, avg_inventory
         else:
             raise Exception("Model could not be solved to optimality")
 
