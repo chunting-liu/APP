@@ -182,3 +182,68 @@ class Visualizer:
             plt.close()
         except Exception as e:
             print(f"Error in plot_industry_comparison: {str(e)}")
+
+    def plot_uncertainty_analysis(self, results_df: pd.DataFrame) -> None:
+        """
+        Plot the impact of demand uncertainty on emission patterns.
+
+        Args:
+            results_df: DataFrame with columns 'uncertainty', 'function_type',
+                        'expected_cost', 'expected_emissions'.
+        """
+        try:
+            plt.figure(figsize=(12, 8))
+            sns.lineplot(
+                data=results_df,
+                x='uncertainty',
+                y='expected_cost',
+                hue='function_type',
+                style='function_type',
+                markers=True,
+                dashes=False,
+                palette=self.colors
+            )
+            plt.title('Impact of Demand Uncertainty on Expected Cost', fontsize=16)
+            plt.xlabel('Demand Uncertainty (Coefficient of Variation)', fontsize=14)
+            plt.ylabel('Expected Cost ($)', fontsize=14)
+            plt.legend(title='Emission Function', fontsize=10, title_fontsize=12)
+            plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'demand_uncertainty_impact.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+
+        except Exception as e:
+            print(f"Error in plot_uncertainty_analysis: {e}")
+
+    def plot_sustainability_tradeoffs(self, results_df: pd.DataFrame) -> None:
+        """
+        Plot trade-offs between economic and environmental objectives.
+
+        Args:
+            results_df: DataFrame containing sustainability analysis data with
+                        'emission_cost', 'emission_cap', 'total_cost',
+                        'total_emissions', 'service_level', and 'function_type'
+        """
+        try:
+            # Create a colormap for emission costs
+            emission_costs = sorted(results_df['emission_cost'].unique())
+            cmap = plt.get_cmap('viridis', len(emission_costs))
+
+            # Scatter plot for Total Cost vs. Total Emissions, colored by Emission Cost
+            plt.figure(figsize=(12, 8))
+            for i, cost in enumerate(emission_costs):
+                subset = results_df[results_df['emission_cost'] == cost]
+                plt.scatter(subset['total_emissions'], subset['total_cost'],
+                            color=cmap(i), label=f'Emission Cost: {cost}',
+                            s=100, alpha=0.7, edgecolors='w')
+
+            plt.title('Sustainability Trade-offs: Total Cost vs. Total Emissions', fontsize=16)
+            plt.xlabel('Total Emissions (tons)', fontsize=14)
+            plt.ylabel('Total Cost ($)', fontsize=14)
+            plt.legend(title='Emission Cost ($/ton)', fontsize=10, title_fontsize=12)
+            plt.grid(True, linestyle='--', alpha=0.6)
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'sustainability_tradeoffs.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_sustainability_tradeoffs: {str(e)}")

@@ -17,20 +17,14 @@ class ExperimentRunner:
         emission_types = ['linear', 'quadratic', 'exponential', 'logarithmic']
         
         for func_type in emission_types:
-            production_plan, emissions, costs = model.solve(
+            total_cost, total_emissions, service_level, avg_inventory = model.solve(
                 emission_type=func_type,
                 production_levels=production_levels
             )
-            # Calculate total emissions across all scenarios and periods
-            total_emissions = np.sum(emissions)
             results.append({
                 'function_type': func_type,
-                'production_plan': production_plan,
-                'emissions': emissions,
                 'total_emissions': total_emissions,
-                'total_cost': costs['total'],
-                'emission_cost': costs['emission'],
-                'production_cost': costs['production']
+                'total_cost': total_cost,
             })
         
         self.visualizer.plot_emission_comparison(pd.DataFrame(results))
@@ -111,18 +105,18 @@ class ExperimentRunner:
         for uncertainty in uncertainty_levels:
             model = APPModel(demand_uncertainty=uncertainty)
             for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
-                metrics = model.solve(emission_type=func_type)
+                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                 results.append({
                     'uncertainty': uncertainty,
                     'function_type': func_type,
-                    'expected_cost': metrics['expected_cost'],
-                    'expected_emissions': metrics['expected_emissions'],
-                    'cost_variance': metrics['cost_variance'],
-                    'emission_variance': metrics['emission_variance']
+                    'expected_cost': total_cost,
+                    'expected_emissions': total_emissions,
+                    'service_level': service_level,
+                    'avg_inventory': avg_inventory
                 })
-        
         self.visualizer.plot_uncertainty_analysis(pd.DataFrame(results))
         return pd.DataFrame(results)
+
     def run_sensitivity_analysis(self):
         """Perform sensitivity analysis"""
         emission_costs = [20, 40, 60, 80]
