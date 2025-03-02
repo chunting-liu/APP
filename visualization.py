@@ -193,6 +193,13 @@ class Visualizer:
         """
         try:
             plt.figure(figsize=(12, 8))
+            
+            # Get unique function types to limit palette size
+            func_types = results_df['function_type'].unique()
+            # Use only as many colors as there are function types
+            palette = self.colors[:len(func_types)]
+            
+            # Convert data to numpy arrays before any indexing operations
             sns.lineplot(
                 data=results_df,
                 x='uncertainty',
@@ -201,7 +208,7 @@ class Visualizer:
                 style='function_type',
                 markers=True,
                 dashes=False,
-                palette=self.colors
+                palette=palette
             )
             plt.title('Impact of Demand Uncertainty on Expected Cost', fontsize=16)
             plt.xlabel('Demand Uncertainty (Coefficient of Variation)', fontsize=14)
