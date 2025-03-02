@@ -200,8 +200,12 @@ class Visualizer:
             
             # Create line plot for each function type
             for i, func_type in enumerate(func_types):
-                data = results_df[results_df['function_type'] == func_type]
-                plt.plot(data['uncertainty'], data['expected_cost'],
+                # Convert to numpy array before indexing
+                data = results_df[results_df['function_type'] == func_type].copy()
+                uncertainty_values = data['uncertainty'].to_numpy()
+                cost_values = data['expected_cost'].to_numpy()
+                
+                plt.plot(uncertainty_values, cost_values,
                          marker='o', label=func_type, color=palette[i],
                          linewidth=2, markersize=8)
             
