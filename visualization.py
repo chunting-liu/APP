@@ -247,3 +247,160 @@ class Visualizer:
             plt.close()
         except Exception as e:
             print(f"Error in plot_sustainability_tradeoffs: {str(e)}")
+    def plot_benchmark_comparison(self, results_df: pd.DataFrame) -> None:
+        """Plot benchmark comparison of nonlinear emission functions against linear baseline.
+        
+        Args:
+            results_df: DataFrame containing benchmark comparison data
+        """
+        try:
+            plt.figure(figsize=(12, 8))
+            
+            # Create grouped bar chart for cost and emission reductions
+            x = np.arange(len(results_df['function_type'].unique()))
+            width = 0.35
+            
+            # Group by function type and calculate means
+            grouped = results_df.groupby('function_type').mean().reset_index()
+            
+            # Plot cost reduction
+            ax1 = plt.subplot(2, 1, 1)
+            bars1 = ax1.bar(x - width/2, grouped['cost_reduction_percent'], width, label='Cost Reduction', color=self.colors[0])
+            ax1.set_ylabel('Cost Reduction (%)')
+            ax1.set_title('Cost and Emission Reductions Compared to Linear Baseline')
+            ax1.set_xticks(x)
+            ax1.set_xticklabels(grouped['function_type'])
+            ax1.grid(True, alpha=0.3)
+            
+            # Add value labels
+            for bar in bars1:
+                height = bar.get_height()
+                ax1.text(bar.get_x() + bar.get_width()/2., height + 0.5,
+                        f'{height:.1f}%', ha='center', va='bottom')
+            
+            # Plot emission reduction
+            ax2 = plt.subplot(2, 1, 2)
+            bars2 = ax2.bar(x - width/2, grouped['emission_reduction_percent'], width, label='Emission Reduction', color=self.colors[2])
+            ax2.set_ylabel('Emission Reduction (%)')
+            ax2.set_xlabel('Emission Function Type')
+            ax2.set_xticks(x)
+            ax2.set_xticklabels(grouped['function_type'])
+            ax2.grid(True, alpha=0.3)
+            
+            # Add value labels
+            for bar in bars2:
+                height = bar.get_height()
+                ax2.text(bar.get_x() + bar.get_width()/2., height + 0.5,
+                        f'{height:.1f}%', ha='center', va='bottom')
+            
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'benchmark_comparison.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_benchmark_comparison: {str(e)}")
+    
+    def plot_computational_performance(self, results_df: pd.DataFrame) -> None:
+        """Plot computational performance across different problem sizes.
+        
+        Args:
+            results_df: DataFrame containing computational performance data
+        """
+        try:
+            plt.figure(figsize=(10, 6))
+            
+            # Create line plot for each emission function type
+            for i, func_type in enumerate(results_df['function_type'].unique()):
+                data = results_df[results_df['function_type'] == func_type]
+                plt.plot(data['problem_size'], data['solve_time'], marker='o', 
+                         label=func_type, color=self.colors[i], linewidth=2)
+            
+            plt.title('Computational Performance Across Problem Sizes')
+            plt.xlabel('Problem Size (Products × Periods)')
+            plt.ylabel('Solution Time (seconds)')
+            plt.grid(True, alpha=0.3)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'computational_performance.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_computational_performance: {str(e)}")
+    
+    def plot_piecewise_analysis(self, results_df: pd.DataFrame) -> None:
+        """Plot piecewise linear approximation analysis.
+        
+        Args:
+            results_df: DataFrame containing piecewise approximation data
+        """
+        try:
+            plt.figure(figsize=(12, 8))
+            
+            # Plot approximation error vs intervals
+            ax1 = plt.subplot(2, 1, 1)
+            for i, func_type in enumerate(results_df['function_type'].unique()):
+                data = results_df[results_df['function_type'] == func_type]
+                ax1.plot(data['intervals'], data['approximation_error'], marker='o', 
+                        label=func_type, color=self.colors[i], linewidth=2)
+            
+            ax1.set_title('Piecewise Linear Approximation Analysis')
+            ax1.set_ylabel('Approximation Error (%)')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend()
+            
+            # Plot solution time vs intervals
+            ax2 = plt.subplot(2, 1, 2)
+            for i, func_type in enumerate(results_df['function_type'].unique()):
+                data = results_df[results_df['function_type'] == func_type]
+                ax2.plot(data['intervals'], data['solve_time'], marker='o', 
+                        label=func_type, color=self.colors[i], linewidth=2)
+            
+            ax2.set_xlabel('Number of Piecewise Intervals (K)')
+            ax2.set_ylabel('Solution Time (seconds)')
+            ax2.grid(True, alpha=0.3)
+            
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'piecewise_analysis.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_piecewise_analysis: {str(e)}")
+    
+    def plot_parameter_sensitivity(self, results_df: pd.DataFrame) -> None:
+        """Plot sensitivity analysis for various model parameters.
+        
+        Args:
+            results_df: DataFrame containing parameter sensitivity data
+        """
+        try:
+            plt.figure(figsize=(14, 10))
+            
+            # Get unique parameters
+            parameters = results_df['parameter'].unique()
+            
+            # Create subplots for each parameter
+            for i, param in enumerate(parameters):
+                param_data = results_df[results_df['parameter'] == param]
+                
+                # Plot cost sensitivity
+                ax1 = plt.subplot(len(parameters), 2, 2*i+1)
+                ax1.plot(param_data['value'], param_data['total_cost'], marker='o', 
+                         color=self.colors[i], linewidth=2)
+                ax1.set_title(f'{param} vs Total Cost')
+                ax1.set_ylabel('Total Cost ($)')
+                if i == len(parameters)-1:
+                    ax1.set_xlabel(f'{param} Value')
+                ax1.grid(True, alpha=0.3)
+                
+                # Plot emissions sensitivity
+                ax2 = plt.subplot(len(parameters), 2, 2*i+2)
+                ax2.plot(param_data['value'], param_data['total_emissions'], marker='o', 
+                         color=self.colors[i+4], linewidth=2)
+                ax2.set_title(f'{param} vs Total Emissions')
+                ax2.set_ylabel('Total Emissions (tons)')
+                if i == len(parameters)-1:
+                    ax2.set_xlabel(f'{param} Value')
+                ax2.grid(True, alpha=0.3)
+            
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'parameter_sensitivity.pdf'), dpi=300, bbox_inches='tight')
+            plt.close()
+        except Exception as e:
+            print(f"Error in plot_parameter_sensitivity: {str(e)}")

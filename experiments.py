@@ -140,3 +140,128 @@ class ExperimentRunner:
             'total_cost', 
             'Sensitivity to Emission Costs'
         )
+    def run_benchmark_comparison(self):
+        """Compare performance against traditional linear APP model"""
+        problem_sizes = [(5, 12), (10, 24), (15, 36)]  # (products, periods)
+        results = []
+        
+        for num_products, num_periods in problem_sizes:
+            # Traditional linear model
+            linear_model = APPModel()
+            linear_model.I = num_products
+            linear_model.T = num_periods
+            linear_model._generate_parameters()
+            linear_metrics = linear_model.solve(emission_type='linear')
+            
+            # Nonlinear models
+            for func_type in ['quadratic', 'exponential', 'logarithmic']:
+                model = APPModel()
+                model.I = num_products
+                model.T = num_periods
+                model._generate_parameters()
+                metrics = model.solve(emission_type=func_type)
+                
+                # Calculate improvements
+                cost_reduction = ((linear_metrics['total_cost'] - metrics['total_cost']) 
+                                / linear_metrics['total_cost'] * 100)
+                emission_reduction = ((linear_metrics['total_emissions'] - metrics['total_emissions']) 
+                                    / linear_metrics['total_emissions'] * 100)
+                
+                results.append({
+                    'products': num_products,
+                    'periods': num_periods,
+                    'function_type': func_type,
+                    'cost_reduction_percent': cost_reduction,
+                    'emission_reduction_percent': emission_reduction,
+                    'computation_time': metrics['solve_time']
+                })
+        
+        self.visualizer.plot_benchmark_comparison(pd.DataFrame(results))
+        return pd.DataFrame(results)
+    
+    def analyze_computational_performance(self):
+        """Analyze computational performance across different problem sizes"""
+        problem_sizes = [(5, 12), (10, 24), (15, 36), (20, 48)]
+        results = []
+        
+        for num_products, num_periods in problem_sizes:
+            for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
+                model = APPModel()
+                model.I = num_products
+                model.T = num_periods
+                model._generate_parameters()
+                metrics = model.solve(emission_type=func_type)
+                
+                results.append({
+                    'products': num_products,
+                    'periods': num_periods,
+                    'function_type': func_type,
+                    'problem_size': num_products * num_periods,
+                    'solve_time': metrics['solve_time'],
+                    'iterations': metrics['iterations']
+                })
+        
+        self.visualizer.plot_computational_performance(pd.DataFrame(results))
+        return pd.DataFrame(results)
+    
+    def analyze_piecewise_approximation(self):
+        """Analyze impact of number of piecewise intervals"""
+        K_values = [3, 5, 7, 10, 15]
+        results = []
+        
+        for K in K_values:
+            model = APPModel()
+            model.K = K
+            model._generate_parameters()
+            
+            for func_type in ['quadratic', 'exponential', 'logarithmic']:
+                metrics = model.solve(emission_type=func_type)
+                
+                results.append({
+                    'intervals': K,
+                    'function_type': func_type,
+                    'approximation_error': metrics['approximation_error'],
+                    'solve_time': metrics['solve_time']
+                })
+        
+        self.visualizer.plot_piecewise_analysis(pd.DataFrame(results))
+        return pd.DataFrame(results)
+    
+    def run_parameter_sensitivity(self):
+        """Analyze sensitivity to various model parameters"""
+        parameters = {
+            'capacity': [150, 200, 250, 300],
+            'backorder_cost': [150, 200, 250, 300],
+            'emission_alpha': [0.1, 0.2, 0.3, 0.4],
+            'emission_beta': [0.01, 0.02, 0.03, 0.04]
+        }
+        
+        results = []
+        base_model = APPModel()
+        
+        for param_name, param_values in parameters.items():
+            for value in param_values:
+                model = APPModel()
+                
+                # Update the specific parameter
+                if param_name == 'capacity':
+                    model.cap = np.full((model.I, model.T), value)
+                elif param_name == 'backorder_cost':
+                    model.c_b = np.full(model.I, value)
+                elif param_name == 'emission_alpha':
+                    model.alpha_quad = np.full(model.I, value)
+                elif param_name == 'emission_beta':
+                    model.beta_quad = np.full(model.I, value)
+                
+                metrics = model.solve(emission_type='quadratic')
+                
+                results.append({
+                    'parameter': param_name,
+                    'value': value,
+                    'total_cost': metrics['total_cost'],
+                    'total_emissions': metrics['total_emissions'],
+                    'service_level': metrics['service_level']
+                })
+        
+        self.visualizer.plot_parameter_sensitivity(pd.DataFrame(results))
+        return pd.DataFrame(results)
