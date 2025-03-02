@@ -37,8 +37,11 @@ def main():
         results['uncertainty'] = runner.analyze_demand_uncertainty()
         
         # Save results
-        for name, df in results.items():
-            df.to_csv(os.path.join(RESULTS_DIR, f'{name}_results.csv'))
+        for name, result in results.items():
+            if isinstance(result, pd.DataFrame):
+                result.to_csv(os.path.join(RESULTS_DIR, f'{name}_results.csv'))
+            else:
+                logging.info(f"Skipping saving {name} as it is not a DataFrame.")
         
         logging.info("All experiments completed successfully")
         
