@@ -2,6 +2,7 @@ from experiments import ExperimentRunner
 import logging
 import os
 import pandas as pd
+import time
 from config import LOG_FILE, RESULTS_DIR, IMAGES_DIR
 
 def setup_logging():
@@ -35,6 +36,26 @@ def main():
         # Analyze impact of demand uncertainty
         logging.info("Analyzing demand uncertainty effects...")
         results['uncertainty'] = runner.analyze_demand_uncertainty()
+        
+        # Run benchmark comparison against linear emission model
+        logging.info("Running benchmark comparison against linear emission model...")
+        results['benchmark_comparison'] = runner.run_benchmark_comparison()
+        
+        # Analyze computational performance across different problem sizes
+        logging.info("Analyzing computational performance...")
+        results['computational_performance'] = runner.analyze_computational_performance()
+        
+        # Analyze piecewise linear approximation
+        logging.info("Analyzing piecewise linear approximation...")
+        results['piecewise_analysis'] = runner.analyze_piecewise_approximation()
+        
+        # Run parameter sensitivity analysis
+        logging.info("Running parameter sensitivity analysis...")
+        results['parameter_sensitivity'] = runner.run_parameter_sensitivity()
+        
+        # Run sensitivity analysis
+        logging.info("Running sensitivity analysis...")
+        runner.run_sensitivity_analysis()
         
         # Save results
         for name, result in results.items():

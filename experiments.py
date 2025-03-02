@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import time
 from app_model import APPModel
 from visualization import Visualizer
 
@@ -190,15 +191,20 @@ class ExperimentRunner:
                 model.I = num_products
                 model.T = num_periods
                 model._generate_parameters()
+                
+                # Measure solve time
+                start_time = time.time()
                 total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
+                solve_time = time.time() - start_time
                 
                 results.append({
                     'products': num_products,
                     'periods': num_periods,
                     'function_type': func_type,
                     'problem_size': num_products * num_periods,
-                    'solve_time': 0,  # The solve method doesn't return solve_time
-                    'iterations': 0    # The solve method doesn't return iterations
+                    'solve_time': solve_time,
+                    'total_cost': total_cost,
+                    'total_emissions': total_emissions
                 })
         
         self.visualizer.plot_computational_performance(pd.DataFrame(results))
@@ -209,19 +215,44 @@ class ExperimentRunner:
         K_values = [3, 5, 7, 10, 15]
         results = []
         
+        # Reference solution with high K value for error calculation
+        reference_K = 30
+        reference_results = {}
+        
+        # Get reference solutions for each function type
+        for func_type in ['quadratic', 'exponential', 'logarithmic']:
+            ref_model = APPModel()
+            ref_model.K = reference_K
+            ref_model._generate_parameters()
+            ref_cost, ref_emissions, _, _ = ref_model.solve(emission_type=func_type)
+            reference_results[func_type] = {'cost': ref_cost, 'emissions': ref_emissions}
+        
         for K in K_values:
-            model = APPModel()
-            model.K = K
-            model._generate_parameters()
-            
             for func_type in ['quadratic', 'exponential', 'logarithmic']:
-                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
+                model = APPModel()
+                model.K = K
+                model._generate_parameters()
+                
+                # Measure solve time
+                start_time = time.time()
+                total_cost, total_emissions, _, _ = model.solve(emission_type=func_type)
+                solve_time = time.time() - start_time
+                
+                # Calculate approximation error compared to reference solution
+                ref_cost = reference_results[func_type]['cost']
+                ref_emissions = reference_results[func_type]['emissions']
+                
+                cost_error = abs((total_cost - ref_cost) / ref_cost * 100) if ref_cost != 0 else 0
+                emission_error = abs((total_emissions - ref_emissions) / ref_emissions * 100) if ref_emissions != 0 else 0
+                approximation_error = (cost_error + emission_error) / 2
                 
                 results.append({
                     'intervals': K,
                     'function_type': func_type,
-                    'approximation_error': 0,  # The solve method doesn't return approximation_error
-                    'solve_time': 0           # The solve method doesn't return solve_time
+                    'approximation_error': approximation_error,
+                    'solve_time': solve_time,
+                    'total_cost': total_cost,
+                    'total_emissions': total_emissions
                 })
         
         self.visualizer.plot_piecewise_analysis(pd.DataFrame(results))
