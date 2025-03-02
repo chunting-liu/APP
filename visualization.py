@@ -199,7 +199,7 @@ class Visualizer:
             # Use only as many colors as there are function types
             palette = self.colors[:len(func_types)]
             
-            # Convert data to numpy arrays before any indexing operations
+            # Create line plot using seaborn's lineplot
             sns.lineplot(
                 data=results_df,
                 x='uncertainty',
