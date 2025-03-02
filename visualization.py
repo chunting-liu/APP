@@ -199,17 +199,13 @@ class Visualizer:
             # Use only as many colors as there are function types
             palette = self.colors[:len(func_types)]
             
-            # Create line plot using seaborn's lineplot
-            sns.lineplot(
-                data=results_df,
-                x='uncertainty',
-                y='expected_cost',
-                hue='function_type',
-                style='function_type',
-                markers=True,
-                dashes=False,
-                palette=palette
-            )
+            # Create line plot for each function type separately
+            for i, func_type in enumerate(func_types):
+                data = results_df[results_df['function_type'] == func_type]
+                plt.plot(data['uncertainty'], data['expected_cost'],
+                         marker='o', label=func_type, color=palette[i],
+                         linewidth=2, markersize=8)
+            
             plt.title('Impact of Demand Uncertainty on Expected Cost', fontsize=16)
             plt.xlabel('Demand Uncertainty (Coefficient of Variation)', fontsize=14)
             plt.ylabel('Expected Cost ($)', fontsize=14)
