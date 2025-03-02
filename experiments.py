@@ -73,16 +73,16 @@ class ExperimentRunner:
             for cap in emission_caps:
                 for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
                     model = APPModel(emission_cost=cost, emission_cap=cap)
-                    total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
+                    metrics = model.solve(emission_type=func_type)
                     
                     results.append({
                         'emission_cost': cost,
                         'emission_cap': cap,
                         'function_type': func_type,
-                        'total_cost': total_cost,
-                        'total_emissions': total_emissions,
-                        'service_level': service_level,
-                        'inventory_levels': avg_inventory
+                        'total_cost': metrics['total_cost'],
+                        'total_emissions': metrics['total_emissions'],
+                        'service_level': metrics['service_level'],
+                        'inventory_levels': metrics['avg_inventory']
                     })
         
         self.visualizer.plot_sustainability_tradeoffs(pd.DataFrame(results))
