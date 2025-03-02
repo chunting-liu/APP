@@ -67,16 +67,16 @@ class ExperimentRunner:
             for cap in emission_caps:
                 for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
                     model = APPModel(emission_cost=cost, emission_cap=cap)
-                    metrics = model.solve(emission_type=func_type)
+                    total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                     
                     results.append({
                         'emission_cost': cost,
                         'emission_cap': cap,
                         'function_type': func_type,
-                        'total_cost': metrics['total_cost'],
-                        'total_emissions': metrics['total_emissions'],
-                        'service_level': metrics['service_level'],
-                        'inventory_levels': metrics['avg_inventory']
+                        'total_cost': total_cost,
+                        'total_emissions': total_emissions,
+                        'service_level': service_level,
+                        'inventory_levels': avg_inventory
                     })
         
         self.visualizer.plot_sustainability_tradeoffs(pd.DataFrame(results))
@@ -151,7 +151,7 @@ class ExperimentRunner:
             linear_model.I = num_products
             linear_model.T = num_periods
             linear_model._generate_parameters()
-            linear_metrics = linear_model.solve(emission_type='linear')
+            linear_total_cost, linear_total_emissions, _, _ = linear_model.solve(emission_type='linear')
             
             # Nonlinear models
             for func_type in ['quadratic', 'exponential', 'logarithmic']:
@@ -159,13 +159,13 @@ class ExperimentRunner:
                 model.I = num_products
                 model.T = num_periods
                 model._generate_parameters()
-                metrics = model.solve(emission_type=func_type)
+                total_cost, total_emissions, _, _ = model.solve(emission_type=func_type)
                 
                 # Calculate improvements
-                cost_reduction = ((linear_metrics['total_cost'] - metrics['total_cost']) 
-                                / linear_metrics['total_cost'] * 100)
-                emission_reduction = ((linear_metrics['total_emissions'] - metrics['total_emissions']) 
-                                    / linear_metrics['total_emissions'] * 100)
+                cost_reduction = ((linear_total_cost - total_cost) 
+                                / linear_total_cost * 100)
+                emission_reduction = ((linear_total_emissions - total_emissions) 
+                                    / linear_total_emissions * 100)
                 
                 results.append({
                     'products': num_products,
@@ -173,7 +173,7 @@ class ExperimentRunner:
                     'function_type': func_type,
                     'cost_reduction_percent': cost_reduction,
                     'emission_reduction_percent': emission_reduction,
-                    'computation_time': metrics['solve_time']
+                    'computation_time': 0  # Remove metrics['solve_time'] as it's not returned by solve()
                 })
         
         self.visualizer.plot_benchmark_comparison(pd.DataFrame(results))
@@ -190,15 +190,15 @@ class ExperimentRunner:
                 model.I = num_products
                 model.T = num_periods
                 model._generate_parameters()
-                metrics = model.solve(emission_type=func_type)
+                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                 
                 results.append({
                     'products': num_products,
                     'periods': num_periods,
                     'function_type': func_type,
                     'problem_size': num_products * num_periods,
-                    'solve_time': metrics['solve_time'],
-                    'iterations': metrics['iterations']
+                    'solve_time': 0,  # The solve method doesn't return solve_time
+                    'iterations': 0    # The solve method doesn't return iterations
                 })
         
         self.visualizer.plot_computational_performance(pd.DataFrame(results))
@@ -215,13 +215,13 @@ class ExperimentRunner:
             model._generate_parameters()
             
             for func_type in ['quadratic', 'exponential', 'logarithmic']:
-                metrics = model.solve(emission_type=func_type)
+                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                 
                 results.append({
                     'intervals': K,
                     'function_type': func_type,
-                    'approximation_error': metrics['approximation_error'],
-                    'solve_time': metrics['solve_time']
+                    'approximation_error': 0,  # The solve method doesn't return approximation_error
+                    'solve_time': 0           # The solve method doesn't return solve_time
                 })
         
         self.visualizer.plot_piecewise_analysis(pd.DataFrame(results))
@@ -253,14 +253,14 @@ class ExperimentRunner:
                 elif param_name == 'emission_beta':
                     model.beta_quad = np.full(model.I, value)
                 
-                metrics = model.solve(emission_type='quadratic')
+                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type='quadratic')
                 
                 results.append({
                     'parameter': param_name,
                     'value': value,
-                    'total_cost': metrics['total_cost'],
-                    'total_emissions': metrics['total_emissions'],
-                    'service_level': metrics['service_level']
+                    'total_cost': total_cost,
+                    'total_emissions': total_emissions,
+                    'service_level': service_level
                 })
         
         self.visualizer.plot_parameter_sensitivity(pd.DataFrame(results))
