@@ -194,15 +194,16 @@ class Visualizer:
         try:
             plt.figure(figsize=(12, 8))
             
-            # Get unique function types to limit palette size
+            # Get unique function types and convert data to numpy arrays
             func_types = results_df['function_type'].unique()
-            # Use only as many colors as there are function types
             palette = self.colors[:len(func_types)]
             
-            # Create line plot for each function type separately
+            # Create line plot for each function type
             for i, func_type in enumerate(func_types):
                 data = results_df[results_df['function_type'] == func_type]
-                plt.plot(data['uncertainty'], data['expected_cost'],
+                uncertainty = data['uncertainty'].to_numpy()
+                expected_cost = data['expected_cost'].to_numpy()
+                plt.plot(uncertainty, expected_cost,
                          marker='o', label=func_type, color=palette[i],
                          linewidth=2, markersize=8)
             
