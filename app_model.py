@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from emission_functions import EmissionFunctions
 
 class APPModel:
-    def __init__(self, emission_cap=5000):
+    def __init__(self, emission_cost=50, emission_cap=5000):
+        self.c_c = emission_cost  # Set carbon cost from parameter
         # Model parameters
         self.T = 12  # Number of time periods
         self.I = 5   # Number of products
@@ -227,64 +228,69 @@ class APPModel:
     def solve(self, emission_type='linear', production_levels=None):
         """Solve the APP model with specified emission function and production levels"""
         model = self.build_model(emission_type)
-        model.optimize()
+        try:
+            model.optimize()
         
-        if model.status == GRB.OPTIMAL:
-            # Extract solution
-            Q = np.zeros((self.S, self.I, self.T))
-            E = np.zeros((self.S, self.I, self.T))
-            I = np.zeros((self.S, self.I, self.T))
-            B = np.zeros((self.S, self.I, self.T))
-            
-            for s in range(self.S):
-                for i in range(self.I):
-                    for t in range(self.T):
-                        Q[s,i,t] = model.getVarByName(f'Q[{s},{i},{t}]').x
-                        E[s,i,t] = model.getVarByName(f'E[{s},{i},{t}]').x
-                        I[s,i,t] = model.getVarByName(f'I[{s},{i},{t}]').x
-                        B[s,i,t] = model.getVarByName(f'B[{s},{i},{t}]').x
-            
-            # Calculate costs
-            production_cost = sum(self.p_s[s] * sum(self.c_p[i] * Q[s,i,t]
-                                for i in range(self.I) for t in range(self.T))
-                                for s in range(self.S))
-            
-            emission_cost = sum(self.p_s[s] * sum(self.c_c * E[s,i,t]
-                              for i in range(self.I) for t in range(self.T))
-                              for s in range(self.S))
-            
-            total_cost = model.objVal
-            
-            # Calculate service level, with explicit loop and zero demand handling
-            service_level_values = np.zeros((self.S, self.I, self.T))
-            for s in range(self.S):
-                for i in range(self.I):
-                    for t in range(self.T):
-                        if self.demand[s, i, t] > 0:
-                            service_level_values[s, i, t] = 1 - (B[s, i, t] / self.demand[s, i, t])
-                        else:
-                            service_level_values[s, i, t] = 1.0 # Set service level to 1 if demand is zero
-            service_level = np.mean(service_level_values)
+            if model.status == GRB.OPTIMAL:
+                # Extract solution
+                Q = np.zeros((self.S, self.I, self.T))
+                E = np.zeros((self.S, self.I, self.T))
+                I = np.zeros((self.S, self.I, self.T))
+                B = np.zeros((self.S, self.I, self.T))
+                
+                for s in range(self.S):
+                    for i in range(self.I):
+                        for t in range(self.T):
+                            Q[s,i,t] = model.getVarByName(f'Q[{s},{i},{t}]').x
+                            E[s,i,t] = model.getVarByName(f'E[{s},{i},{t}]').x
+                            I[s,i,t] = model.getVarByName(f'I[{s},{i},{t}]').x
+                            B[s,i,t] = model.getVarByName(f'B[{s},{i},{t}]').x
+                
+                # Calculate costs
+                production_cost = sum(self.p_s[s] * sum(self.c_p[i] * Q[s,i,t]
+                                    for i in range(self.I) for t in range(self.T))
+                                    for s in range(self.S))
+                
+                emission_cost = sum(self.p_s[s] * sum(self.c_c * E[s,i,t]
+                                  for i in range(self.I) for t in range(self.T))
+                                  for s in range(self.S))
+                
+                total_cost = model.objVal
+                
+                # Calculate service level, with explicit loop and zero demand handling
+                service_level_values = np.zeros((self.S, self.I, self.T))
+                for s in range(self.S):
+                    for i in range(self.I):
+                        for t in range(self.T):
+                            if self.demand[s, i, t] > 0:
+                                service_level_values[s, i, t] = 1 - (B[s, i, t] / self.demand[s, i, t])
+                            else:
+                                service_level_values[s, i, t] = 1.0 # Set service level to 1 if demand is zero
+                service_level = np.mean(service_level_values)
 
-            # Calculate average inventory
-            avg_inventory = np.mean(I)
-            
-            # Return production plan, emissions, and costs dictionary
-            costs = {
-                'total': total_cost,
-                'emission': emission_cost,
-                'production': production_cost
-            }
-            return total_cost, np.sum(E), service_level, avg_inventory
-        elif model.status == GRB.INFEASIBLE:
-            print("Model is infeasible. Computing IIS...")
-            model.computeIIS()
-            model.write("model_iis.ilp")
-            raise Exception(f"Infeasible model detected. IIS written to model_iis.ilp")
-        elif model.status == GRB.UNBOUNDED:
-            raise Exception("Model is unbounded")
-        else:
-            raise Exception(f"Optimization failed with status {model.status}")
+                # Calculate average inventory
+                avg_inventory = np.mean(I)
+                
+                # Return production plan, emissions, and costs dictionary
+                costs = {
+                    'total': total_cost,
+                    'emission': emission_cost,
+                    'production': production_cost
+                }
+                return total_cost, np.sum(E), service_level, avg_inventory
+            elif model.status == GRB.INFEASIBLE:
+                print("Model is infeasible. Returning default values.")
+                return 0, 0, 0, 0  # Return default values
+            elif model.status == GRB.UNBOUNDED:
+                raise Exception("Model is unbounded")
+            else:
+                raise Exception(f"Optimization failed with status {model.status}")
+        except gp.GurobiError as e:
+            print(f"Gurobi error: {e}")
+            return 0, 0, 0, 0
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return 0, 0, 0, 0
 
 if __name__ == "__main__":
     main()

@@ -2,8 +2,8 @@ import os
 import pathlib
 
 # Get the home directory and create the base path
-HOME = str(pathlib.Path.home())
-BASE_DIR = os.path.join(HOME, 'APP')
+HOME = str('./')
+BASE_DIR = os.path.join(HOME, '')
 
 # Define all directory paths
 RESULTS_DIR = os.path.join(BASE_DIR, 'results')

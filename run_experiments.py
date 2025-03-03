@@ -1,3 +1,4 @@
+import experiments
 from experiments import ExperimentRunner
 import logging
 import os
@@ -17,7 +18,7 @@ def main():
     os.makedirs(IMAGES_DIR, exist_ok=True)
     os.makedirs(RESULTS_DIR, exist_ok=True)
     
-    runner = ExperimentRunner()
+    runner = experiments.ExperimentRunner()
     results = {}
     
     try:

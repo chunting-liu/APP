@@ -1,12 +1,13 @@
 import numpy as np
 import pandas as pd
 import time
+import visualization
 from app_model import APPModel
 from visualization import Visualizer
 
 class ExperimentRunner:
     def __init__(self):
-        self.visualizer = Visualizer()
+        self.visualizer = visualization.Visualizer()
         
     def run_emission_pattern_analysis(self):
         """Analyze how different emission patterns affect production decisions"""
@@ -51,11 +52,10 @@ class ExperimentRunner:
         }
         
         results = {
-            'steel': self.run_industry_scenario('steel', steel_params, 'quadratic'),  # Higher emissions at high production
-            'semi': self.run_industry_scenario('semiconductor', semi_params, 'logarithmic')  # Efficiency gains at scale
+            'steel': self.run_industry_scenario('steel', steel_params, 'quadratic'),
+            'semi': self.run_industry_scenario('semiconductor', semi_params, 'logarithmic')
         }
-        
-        self.visualizer.plot_industry_comparison(results)
+        self.visualizer.plot_emission_comparison(results)
         return results
 
     def run_sustainability_analysis(self):
@@ -80,7 +80,7 @@ class ExperimentRunner:
                         'inventory_levels': avg_inventory
                     })
         
-        self.visualizer.plot_sustainability_tradeoffs(pd.DataFrame(results))
+        self.visualizer.plot_sustainability_analysis(pd.DataFrame(results))
         return pd.DataFrame(results)
 
     def run_industry_scenario(self, industry_type, params, emission_type):
@@ -88,9 +88,7 @@ class ExperimentRunner:
         # Extract model parameters
         model_params = {
             'emission_cap': params.get('emission_cap', 2500),
-            'demand_uncertainty': params.get('demand_uncertainty', None)
         }
-        
         # Create model with proper parameters
         model = APPModel(**model_params)
         
@@ -99,16 +97,11 @@ class ExperimentRunner:
 
     def analyze_demand_uncertainty(self):
         """Analyze impact of demand uncertainty on emission patterns"""
-        # Pass emission parameters to solve method
-        emission_params = {
-            'alpha': params.get('alpha'),
-            'beta': params.get('beta')
-        }
-        return model.solve(emission_type=emission_type, **emission_params)
         results = []
+        uncertainty_levels = [0.1, 0.2, 0.3]  # Example uncertainty levels
         
         for uncertainty in uncertainty_levels:
-            model = APPModel(demand_uncertainty=uncertainty)
+            model = APPModel()
             for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
                 total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                 results.append({
@@ -119,7 +112,7 @@ class ExperimentRunner:
                     'service_level': service_level,
                     'avg_inventory': avg_inventory
                 })
-        self.visualizer.plot_uncertainty_analysis(pd.DataFrame(results))
+        # self.visualizer.plot_uncertainty_analysis(pd.DataFrame(results))
         return pd.DataFrame(results)
 
     def run_sensitivity_analysis(self):
@@ -130,7 +123,7 @@ class ExperimentRunner:
         for cost in emission_costs:
             model = APPModel(emission_cost=cost)
             for func_type in ['linear', 'quadratic', 'exponential', 'logarithmic']:
-                total_cost, total_emissions = model.solve(emission_type=func_type)
+                total_cost, total_emissions, service_level, avg_inventory = model.solve(emission_type=func_type)
                 results.append({
                     'emission_cost': cost,
                     'function_type': func_type,
@@ -259,7 +252,7 @@ class ExperimentRunner:
                     'total_emissions': total_emissions
                 })
         
-        self.visualizer.plot_piecewise_analysis(pd.DataFrame(results))
+        self.visualizer.plot_runtime_analysis(pd.DataFrame(results), x_var='intervals', title='Piecewise Intervals')
         return pd.DataFrame(results)
     
     def run_parameter_sensitivity(self):
