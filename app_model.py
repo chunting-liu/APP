@@ -7,20 +7,16 @@ import matplotlib.pyplot as plt
 from emission_functions import EmissionFunctions
 
 class APPModel:
-    def __init__(self, emission_cost=None, emission_cap=None, demand_uncertainty=None):
+    def __init__(self, emission_cap=5000):
         # Model parameters
         self.T = 12  # Number of time periods
         self.I = 5   # Number of products
         self.S = 3   # Number of scenarios
         self.K = 5   # Number of intervals for piecewise approximation
+        self.emission_cap = emission_cap  # Initialize emission_cap
         
         # Initialize random seed for reproducibility
         np.random.seed(42)
-        
-        # Set optional parameters
-        self.emission_cost = emission_cost if emission_cost is not None else 50
-        self.emission_cap = emission_cap if emission_cap is not None else 5000  # Increased emission cap to avoid infeasibility, from 2500 to 5000
-        self.demand_uncertainty = demand_uncertainty
         
         # Generate parameters
         self._generate_parameters()
@@ -49,7 +45,7 @@ class APPModel:
         # Capacity constraints
         self.cap = np.full((self.I, self.T), 250)
         self.max_b = np.full((self.I, self.T), 50)
-        self.max_c = 2500  # Maximum emissions per period
+        self.max_c = self.emission_cap  # Use the emission_cap parameter instead of hardcoded value
         
         # Generate demand scenarios
         self._generate_demand()

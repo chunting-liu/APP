@@ -100,7 +100,12 @@ class ExperimentRunner:
 
     def analyze_demand_uncertainty(self):
         """Analyze impact of demand uncertainty on emission patterns"""
-        uncertainty_levels = [0.1, 0.2, 0.3]  # Coefficient of variation
+        # Pass emission parameters to solve method
+        emission_params = {
+            'alpha': params.get('alpha'),
+            'beta': params.get('beta')
+        }
+        return model.solve(emission_type=emission_type, **emission_params)
         results = []
         
         for uncertainty in uncertainty_levels:
@@ -272,7 +277,13 @@ class ExperimentRunner:
         
         for param_name, param_values in parameters.items():
             for value in param_values:
-                model = APPModel()
+                # Adjust emission cap based on parameter values
+                emission_cap = 5000
+                if param_name in ['emission_alpha', 'emission_beta']:
+                    # Increase emission cap proportionally for higher emission parameters
+                    emission_cap = 5000 * (1 + value)
+                
+                model = APPModel(emission_cap=emission_cap)
                 
                 # Update the specific parameter
                 if param_name == 'capacity':
