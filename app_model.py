@@ -280,8 +280,15 @@ class APPModel:
                 'production': production_cost
             }
             return total_cost, np.sum(E), service_level, avg_inventory
+        elif model.status == GRB.INFEASIBLE:
+            print("Model is infeasible. Computing IIS...")
+            model.computeIIS()
+            model.write("model_iis.ilp")
+            raise Exception(f"Infeasible model detected. IIS written to model_iis.ilp")
+        elif model.status == GRB.UNBOUNDED:
+            raise Exception("Model is unbounded")
         else:
-            raise Exception("Model could not be solved to optimality")
+            raise Exception(f"Optimization failed with status {model.status}")
 
 if __name__ == "__main__":
     main()
