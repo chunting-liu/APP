@@ -8,3 +8,6 @@ paper.tex
 *.synctex.gz
 *.bbl
 *.blg
+
+# Ignore generated files and directories
+__pycache__/

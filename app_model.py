@@ -19,7 +19,7 @@ class APPModel:
         
         # Set optional parameters
         self.emission_cost = emission_cost if emission_cost is not None else 50
-        self.emission_cap = emission_cap if emission_cap is not None else 2500
+        self.emission_cap = emission_cap if emission_cap is not None else 5000  # Increased emission cap to avoid infeasibility, from 2500 to 5000
         self.demand_uncertainty = demand_uncertainty
         
         # Generate parameters
@@ -259,9 +259,17 @@ class APPModel:
             
             total_cost = model.objVal
             
-            # Calculate service level
-            service_level = 1 - np.mean(B / self.demand)
-            
+            # Calculate service level, with explicit loop and zero demand handling
+            service_level_values = np.zeros((self.S, self.I, self.T))
+            for s in range(self.S):
+                for i in range(self.I):
+                    for t in range(self.T):
+                        if self.demand[s, i, t] > 0:
+                            service_level_values[s, i, t] = 1 - (B[s, i, t] / self.demand[s, i, t])
+                        else:
+                            service_level_values[s, i, t] = 1.0 # Set service level to 1 if demand is zero
+            service_level = np.mean(service_level_values)
+
             # Calculate average inventory
             avg_inventory = np.mean(I)
             
