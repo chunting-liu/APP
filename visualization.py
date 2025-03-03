@@ -202,28 +202,26 @@ class Visualizer:
             print(f"Error in plot_computational_performance: {str(e)}")
 
 
-    def plot_parameter_sensitivity(self, df: pd.DataFrame):
+    def plot_parameter_sensitivity(self, results_df: pd.DataFrame):
         """
         Plots the parameter sensitivity data.
 
         Args:
             df: A pandas DataFrame containing the sensitivity results.
         """
-        #Implement your plot code here
-        print("plotted")
-
-        # Example plot: Assumes columns 'parameter' and 'value' are in the dataframe
-        if 'parameter' in df.columns and 'value' in df.columns:
-            plt.figure()
-            plt.plot(df['parameter'], df['value'])
-            plt.xlabel('Parameter')
-            plt.ylabel('Value')
-            plt.title('Parameter Sensitivity')
-            plt.savefig(os.path.join(IMAGES_DIR, 'paramter_sensitivity.pdf'), dpi=300, bbox_inches='tight')
+        try:
+            plt.figure(figsize=(12, 6))
+            sns.lineplot(data=results_df, x='value', y='total_cost', hue='parameter', palette=self.colors)
+            plt.title('Sensitivity Analysis of Parameters on Total Cost', pad=20)
+            plt.xlabel('Parameter Value')
+            plt.ylabel('Total Cost ($)')
+            plt.legend(title='Parameter')
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plt.savefig(os.path.join(IMAGES_DIR, 'parameter_sensitivity.pdf'), dpi=300, bbox_inches='tight')
             plt.close()
-        else:
-            print("Missing parameter or value in DataFrame")
-        pass
+        except Exception as e:
+            print(f"Error in plot_parameter_sensitivity: {str(e)}")
 
     def plot_sustainability_analysis(self, results_df: pd.DataFrame) -> None:
         """Plot sustainability analysis results as bar charts.

@@ -128,6 +128,31 @@ class ExperimentRunner:
         plt.savefig(f"{self.figures_dir}/sensitivity_emission_cost.pdf")
         plt.close()
 
+    def plot_runtime_analysis_piecewise(self):
+        """Generate runtime analysis plots for piecewise analysis"""
+        results_df = pd.read_csv(f"{self.results_dir}/piecewise_analysis_results.csv")
+        plt.figure(figsize=(10, 6))
+        
+        # Plotting for Quadratic function
+        quadratic_data = results_df[results_df['function_type'] == 'quadratic']
+        plt.plot(quadratic_data['intervals'], quadratic_data['solve_time'], marker='o', linestyle='-', label='Quadratic')
+        
+        # Plotting for Exponential function
+        exponential_data = results_df[results_df['function_type'] == 'exponential']
+        plt.plot(exponential_data['intervals'], exponential_data['solve_time'], marker='s', linestyle='--', label='Exponential')
+        
+        # Plotting for Logarithmic function
+        logarithmic_data = results_df[results_df['function_type'] == 'logarithmic']
+        plt.plot(logarithmic_data['intervals'], logarithmic_data['solve_time'], marker='^', linestyle='-.', label='Logarithmic')
+        
+        plt.xlabel('Number of Piecewise Intervals (K)')
+        plt.ylabel('Solve Time (seconds)')
+        plt.title('Impact of Piecewise Intervals on Computational Runtime')
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(f"{self.figures_dir}/runtime_vs_intervals.pdf")
+        plt.close()
+
     def _run_model_with_emission_function(self, func_type):
         """Run model with different emission functions and return metrics"""
         from app_model import APPModel
