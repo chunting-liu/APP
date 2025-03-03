@@ -87,7 +87,6 @@ class ExperimentRunner:
         """Run specific industry scenario"""
         # Extract model parameters
         model_params = {
-            'emission_cost': params.get('emission_cost', 50),
             'emission_cap': params.get('emission_cap', 2500),
             'demand_uncertainty': params.get('demand_uncertainty', None)
         }
