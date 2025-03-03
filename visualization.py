@@ -9,7 +9,11 @@ from config import IMAGES_DIR
 class Visualizer:
     def __init__(self):
         """Initialize the visualizer with seaborn style and create images directory if needed."""
-        plt.style.use('seaborn')
+        try:
+            plt.style.use('seaborn')
+        except OSError:
+            # Fallback to a standard matplotlib style if seaborn style is not available
+            plt.style.use('ggplot')
         os.makedirs(IMAGES_DIR, exist_ok=True)
         self.colors = sns.color_palette('husl', 8)
         
