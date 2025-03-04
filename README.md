@@ -1,4 +1,4 @@
-# Aggregate Production Planning with Carbon Emission Patterns
+# Aggregate Production Planning with Nonlinear Carbon Emission Functions
 
 This project implements an enhanced Aggregate Production Planning (APP) model that integrates multiple carbon emission functions to optimize production planning while considering environmental sustainability. The model provides a robust and flexible tool for balancing economic objectives with environmental considerations.
 
