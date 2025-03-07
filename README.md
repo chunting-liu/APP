@@ -97,5 +97,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 If you use this code in your research, please cite:
 
 ```
-Liu, C., & Minner, S. (2024). Aggregate Production Planning Considering Different Carbon Emission Patterns.
+Liu, C., & Minner, S. (2025). Aggregate Production Planning with Nonlinear Carbon Emission Functions.
 ```
